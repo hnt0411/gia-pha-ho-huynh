@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, cloneElement, isValidElement, useEffect } from 'react';
+import { createContext, useContext, useState, cloneElement, isValidElement, useEffect, useRef } from 'react';
 import type { HTMLAttributes, ReactNode, ReactElement, MouseEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
@@ -70,9 +70,9 @@ interface DropdownMenuContentProps extends HTMLAttributes<HTMLDivElement> {
 
 export function DropdownMenuContent({ className, ...props }: DropdownMenuContentProps) {
     const ctx = useContext(DropdownContext);
-    if (!ctx?.open) return null;
+    const contentRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
-        if (!ctx.anchorEl) return;
+        if (!ctx?.open || !ctx.anchorEl) return;
         const update = () => ctx.setAnchorRect(ctx.anchorEl?.getBoundingClientRect() ?? null);
         update();
         window.addEventListener('resize', update);
@@ -81,7 +81,19 @@ export function DropdownMenuContent({ className, ...props }: DropdownMenuContent
             window.removeEventListener('resize', update);
             window.removeEventListener('scroll', update, true);
         };
-    }, [ctx.anchorEl, ctx]);
+    }, [ctx?.anchorEl, ctx?.open, ctx]);
+    useEffect(() => {
+        if (!ctx?.open) return;
+        const handleClickOutside = (e: Event) => {
+            const target = e.target as Node;
+            if (ctx.anchorEl && ctx.anchorEl.contains(target)) return;
+            if (contentRef.current && contentRef.current.contains(target)) return;
+            ctx.setOpen(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [ctx?.open, ctx?.anchorEl, ctx]);
+    if (!ctx?.open) return null;
     const rect = ctx.anchorRect;
     const top = (rect?.bottom ?? 0) + 8;
     const left = (props.align ?? 'end') === 'end' ? (rect?.right ?? 0) : (rect?.left ?? 0);
@@ -92,6 +104,7 @@ export function DropdownMenuContent({ className, ...props }: DropdownMenuContent
                 <div
                     className={cn('fixed rounded-md border bg-background p-2 shadow-xl min-w-56', className)}
                     style={{ top, left, transform, pointerEvents: 'auto' }}
+                    ref={contentRef}
                     {...props}
                 />
             </div>,
