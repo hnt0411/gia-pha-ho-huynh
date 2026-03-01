@@ -60,8 +60,8 @@ export function Header() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                                <Avatar className="h-8 w-8">
-                                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                                <Avatar className="h-8 w-8 border border-border bg-background">
+                                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
                                         {initials}
                                     </AvatarFallback>
                                 </Avatar>
