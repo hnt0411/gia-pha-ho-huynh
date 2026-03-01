@@ -222,7 +222,7 @@ export default function BookPage() {
     return (
         <div className="min-w-0 w-full overflow-hidden">
             {/* ═══ TOOLBAR ═══ */}
-            <div className="no-print sticky top-0 z-50 bg-white/95 dark:bg-slate-900/90 backdrop-blur-lg border-b border-slate-200 dark:border-border shadow-sm">
+            <div className="no-print sticky top-0 z-50 bg-white text-slate-900 dark:bg-slate-900/90 dark:text-slate-100 backdrop-blur-lg border-b border-slate-200 dark:border-border shadow-sm">
                 <div className="px-4 py-2.5 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Link href="/tree">
