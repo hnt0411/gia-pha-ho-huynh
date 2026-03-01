@@ -122,7 +122,7 @@ export default function LoginPage() {
                         {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
                     </div>
 
-                    <Button type="submit" className="w-full" disabled={loading}>
+                    <Button type="submit" className="w-full shadow-md hover:shadow-lg transition-shadow" disabled={loading}>
                         {mode === 'login' ? (
                             <>{loading ? 'Đang đăng nhập...' : <><LogIn className="h-4 w-4 mr-2" /> Đăng nhập</>}</>
                         ) : (
@@ -138,7 +138,7 @@ export default function LoginPage() {
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full"
+                        className="w-full border-2 shadow-sm hover:shadow-md bg-white/80"
                         onClick={() => { setMode(m => m === 'login' ? 'register' : 'login'); setError(''); setSuccess(''); }}
                     >
                         {mode === 'login'
