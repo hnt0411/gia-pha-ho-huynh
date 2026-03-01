@@ -96,7 +96,7 @@ export default function BookPage() {
                 people = mock.people;
                 families = mock.families;
             }
-            const familyName = people.length > 0 ? (people[0].displayName?.split(' ').slice(0, 2).join(' ') || 'Dòng Họ') : 'Dòng Họ';
+            const familyName = 'nhà Huỳnh';
             const data = generateBookData(people, families, familyName);
             setBookData(data);
             setLoading(false);
