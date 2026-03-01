@@ -27,6 +27,7 @@ export type PersonDetail = {
     notes?: string;
     biography?: string;
     tags?: string[];
+    mediaCount?: number;
     chi?: number;
     zalo?: string;
     facebook?: string;
