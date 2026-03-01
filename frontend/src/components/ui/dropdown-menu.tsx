@@ -121,7 +121,12 @@ export function DropdownMenuItem({ className, ...props }: HTMLAttributes<HTMLDiv
     };
     return (
         <div
-            className={cn('cursor-pointer rounded px-2 py-1 text-sm hover:bg-accent', className)}
+            className={cn(
+                'cursor-pointer rounded-md border border-transparent px-3 py-2 text-sm font-medium',
+                'flex items-center gap-2.5 transition-colors',
+                'hover:bg-slate-50 hover:border-slate-200',
+                className,
+            )}
             onClick={handleClick}
             {...props}
         />
@@ -133,5 +138,5 @@ export function DropdownMenuSeparator({ className, ...props }: HTMLAttributes<HT
 }
 
 export function DropdownMenuLabel({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-    return <div className={cn('px-2 py-1 text-sm font-medium', className)} {...props} />;
+    return <div className={cn('px-3 py-2 text-sm font-semibold text-slate-900', className)} {...props} />;
 }
