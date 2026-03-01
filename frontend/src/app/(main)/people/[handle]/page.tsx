@@ -26,6 +26,16 @@ export default function PersonProfilePage() {
     const [isEditing, setIsEditing] = useState(false);
     const [editedPerson, setEditedPerson] = useState<Partial<PersonDetail>>({});
 
+    const handleStartEdit = () => {
+        setEditedPerson({});
+        setIsEditing(true);
+    };
+
+    const handleCancel = () => {
+        setEditedPerson({});
+        setIsEditing(false);
+    };
+
     const handleSave = async () => {
         if (Object.keys(editedPerson).length === 0) {
             setIsEditing(false);
@@ -141,7 +151,7 @@ export default function PersonProfilePage() {
                     <div className="flex gap-2">
                         {isEditing ? (
                             <>
-                                <Button variant="outline" onClick={() => setIsEditing(false)}>
+                                <Button variant="outline" onClick={handleCancel}>
                                     <X className="mr-2 h-4 w-4" /> Hủy
                                 </Button>
                                 <Button onClick={handleSave}>
@@ -149,7 +159,7 @@ export default function PersonProfilePage() {
                                 </Button>
                             </>
                         ) : (
-                            <Button onClick={() => setIsEditing(true)}>
+                            <Button onClick={handleStartEdit}>
                                 <Pencil className="mr-2 h-4 w-4" /> Chỉnh sửa
                             </Button>
                         )}
@@ -194,17 +204,17 @@ export default function PersonProfilePage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-4 md:grid-cols-2">
-                            <EditableInfoRow label="Họ" value={editedPerson.surname ?? person.surname ?? ''} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, surname: v }))} />
-                            <EditableInfoRow label="Tên" value={editedPerson.firstName ?? person.firstName ?? ''} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, firstName: v }))} />
+                            <EditableInfoRow label="Họ" value={isEditing ? (editedPerson.surname ?? person.surname ?? '') : (person.surname ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, surname: v }))} />
+                            <EditableInfoRow label="Tên" value={isEditing ? (editedPerson.firstName ?? person.firstName ?? '') : (person.firstName ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, firstName: v }))} />
                             <InfoRow label="Giới tính" value={genderLabel} />
-                            <EditableInfoRow label="Tên thường gọi" value={editedPerson.nickName ?? person.nickName ?? ''} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, nickName: v }))} />
-                            <EditableInfoRow label="Ngày sinh" value={editedPerson.birthDate ?? person.birthDate ?? ''} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, birthDate: v }))} />
+                            <EditableInfoRow label="Tên thường gọi" value={isEditing ? (editedPerson.nickName ?? person.nickName ?? '') : (person.nickName ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, nickName: v }))} />
+                            <EditableInfoRow label="Ngày sinh" value={isEditing ? (editedPerson.birthDate ?? person.birthDate ?? '') : (person.birthDate ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, birthDate: v }))} />
                             {person.birthYear && <InfoRow label="Năm âm lịch" value={zodiacYear(person.birthYear) || '—'} />}
-                            <EditableInfoRow label="Nơi sinh" value={editedPerson.birthPlace ?? person.birthPlace ?? ''} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, birthPlace: v }))} />
+                            <EditableInfoRow label="Nơi sinh" value={isEditing ? (editedPerson.birthPlace ?? person.birthPlace ?? '') : (person.birthPlace ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, birthPlace: v }))} />
                             {!person.isLiving && (
                                 <>
-                                    <EditableInfoRow label="Ngày mất" value={editedPerson.deathDate ?? person.deathDate ?? ''} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, deathDate: v }))} />
-                                    <EditableInfoRow label="Nơi mất" value={editedPerson.deathPlace ?? person.deathPlace ?? ''} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, deathPlace: v }))} />
+                                    <EditableInfoRow label="Ngày mất" value={isEditing ? (editedPerson.deathDate ?? person.deathDate ?? '') : (person.deathDate ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, deathDate: v }))} />
+                                    <EditableInfoRow label="Nơi mất" value={isEditing ? (editedPerson.deathPlace ?? person.deathPlace ?? '') : (person.deathPlace ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, deathPlace: v }))} />
                                 </>
                             )}
                         </CardContent>
