@@ -114,8 +114,8 @@ function RegisterContent() {
                         <TreePine className="h-8 w-8 text-primary" />
                     </div>
                 </div>
-                <CardTitle className="text-2xl font-bold">Tham gia Gia phả họ Huỳnh</CardTitle>
-                <CardDescription>Đăng ký tham gia nền tảng gia phả dòng họ</CardDescription>
+                <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100">Tham gia Gia phả họ Huỳnh</CardTitle>
+                <CardDescription className="text-slate-600 dark:text-slate-300">Đăng ký tham gia nền tảng gia phả dòng họ</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -130,25 +130,28 @@ function RegisterContent() {
                     )}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium" htmlFor="displayName">Tên hiển thị</label>
-                        <Input id="displayName" placeholder="Huỳnh Văn A" {...register('displayName')} />
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="displayName">Tên hiển thị</label>
+                        <Input id="displayName" placeholder="Huỳnh Văn A" {...register('displayName')}
+                            className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500" />
                         {errors.displayName && <p className="text-xs text-destructive">{errors.displayName.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium" htmlFor="email">Email</label>
-                        <Input id="email" type="email" placeholder="email@example.com" {...register('email')} />
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="email">Email</label>
+                        <Input id="email" type="email" placeholder="email@example.com" {...register('email')}
+                            className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500" />
                         {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium" htmlFor="password">Mật khẩu</label>
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="password">Mật khẩu</label>
                         <div className="relative">
                             <Input
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="Tối thiểu 8 ký tự"
                                 {...register('password')}
+                                className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                             />
                             <button
                                 type="button"
@@ -162,12 +165,13 @@ function RegisterContent() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium" htmlFor="confirmPassword">Xác nhận mật khẩu</label>
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="confirmPassword">Xác nhận mật khẩu</label>
                         <Input
                             id="confirmPassword"
                             type="password"
                             placeholder="Nhập lại mật khẩu"
                             {...register('confirmPassword')}
+                            className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                         />
                         {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>}
                     </div>

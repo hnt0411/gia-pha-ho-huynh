@@ -72,8 +72,8 @@ export default function LoginPage() {
                         <TreePine className="h-8 w-8 text-primary" />
                     </div>
                 </div>
-                <CardTitle className="text-2xl font-bold">Gia phả họ Huỳnh</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100">Gia phả họ Huỳnh</CardTitle>
+                <CardDescription className="text-slate-600 dark:text-slate-300">
                     {mode === 'login'
                         ? 'Đăng nhập để quản lý & đóng góp thông tin'
                         : 'Đăng ký tài khoản thành viên dòng họ'
@@ -91,25 +91,28 @@ export default function LoginPage() {
 
                     {mode === 'register' && (
                         <div className="space-y-2">
-                            <label className="text-sm font-medium" htmlFor="displayName">Họ tên</label>
-                            <Input id="displayName" placeholder="Huỳnh Văn A" {...register('displayName')} />
+                            <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="displayName">Họ tên</label>
+                            <Input id="displayName" placeholder="Huỳnh Văn A" {...register('displayName')}
+                                className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500" />
                         </div>
                     )}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium" htmlFor="email">Email</label>
-                        <Input id="email" type="email" placeholder="email@example.com" {...register('email')} />
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="email">Email</label>
+                        <Input id="email" type="email" placeholder="email@example.com" {...register('email')}
+                            className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500" />
                         {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium" htmlFor="password">Mật khẩu</label>
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="password">Mật khẩu</label>
                         <div className="relative">
                             <Input
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="••••••••"
                                 {...register('password')}
+                                className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                             />
                             <button
                                 type="button"
@@ -138,7 +141,7 @@ export default function LoginPage() {
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full border-2 shadow-sm hover:shadow-md bg-white/80"
+                        className="w-full border-2 shadow-sm hover:shadow-md bg-white/80 dark:bg-slate-900/60"
                         onClick={() => { setMode(m => m === 'login' ? 'register' : 'login'); setError(''); setSuccess(''); }}
                     >
                         {mode === 'login'
