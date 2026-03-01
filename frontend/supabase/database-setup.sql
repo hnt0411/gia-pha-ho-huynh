@@ -314,7 +314,7 @@ INSERT INTO people (handle, display_name, gender, generation, birth_year, birth_
 ('P003', 'Huỳnh Huy Hoàng',    1, 2, 1973, '27/07/1973', NULL, true, true, '{}', '{"F001"}'),
 ('P004', 'Huỳnh Thị Tường Vân', 2, 2, 1975, '04/08/1975', NULL, true, true, '{}', '{"F001"}'),
 ('P005', 'Huỳnh Tiến Dũng',    1, 2, 1978, '26/01/1978', NULL, true, true, '{}', '{"F001"}'),
-('P006', 'Huỳnh Tiến Sĩ',      1, 2, 1981, '02/02/1981', NULL, true, true, '{}', '{"F001"}'),
+('P006', 'Huỳnh Tiến Sỹ',      1, 2, 1981, '02/02/1981', NULL, true, true, '{}', '{"F001"}'),
 ('P007', 'Huỳnh Ngọc Đạt',    1, 2, 1983, '17/03/1983', NULL, true, true, '{}', '{"F001"}'),
 -- Vợ/Chồng của Đời 2
 ('P008', 'Nguyễn Thị Ngọc Hà', 2, 2, 1973, '24/10/1973', NULL, true, false, '{"F002"}', '{}'),
