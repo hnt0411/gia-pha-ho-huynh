@@ -109,6 +109,7 @@ export function computeLayout(people: TreeNode[], families: TreeFamily[]): Layou
     let maxX = 0;
     let maxY = 0;
 
+    const rowWidths = new Map<number, number>();
     for (const gen of sortedGens) {
         const rowGroups = groupsByGen.get(gen)!;
         rowGroups.sort((a, b) => {
@@ -116,7 +117,20 @@ export function computeLayout(people: TreeNode[], families: TreeFamily[]): Layou
             if (a.order.childIndex !== b.order.childIndex) return a.order.childIndex - b.order.childIndex;
             return a.order.name.localeCompare(b.order.name);
         });
-        let xCursor = 0;
+        let rowWidth = 0;
+        rowGroups.forEach((g, idx) => {
+            const groupWidth = g.members.length * CARD_W + (g.members.length - 1) * SPOUSE_GAP;
+            rowWidth += groupWidth;
+            if (idx < rowGroups.length - 1) rowWidth += H_GAP;
+        });
+        rowWidths.set(gen, rowWidth);
+    }
+    const maxRowWidth = Math.max(0, ...rowWidths.values());
+
+    for (const gen of sortedGens) {
+        const rowGroups = groupsByGen.get(gen)!;
+        const rowWidth = rowWidths.get(gen) ?? 0;
+        let xCursor = (maxRowWidth - rowWidth) / 2;
         for (const g of rowGroups) {
             const y = gen * (CARD_H + V_GAP);
             const members = g.members.slice().sort((m1, m2) => (m2.gender ?? 0) - (m1.gender ?? 0));

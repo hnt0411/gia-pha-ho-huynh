@@ -485,6 +485,16 @@ export default function TreeViewPage() {
         setCollapsedBranches(toCollapse);
     }, [treeData]);
 
+    const generationOffset = useMemo(() => {
+        if (!treeData || treeData.people.length === 0) return 0;
+        return treeData.people.reduce((min, p) => Math.min(min, p.generation ?? min), treeData.people[0].generation ?? 0);
+    }, [treeData]);
+
+    const getDisplayGen = useCallback((gen?: number) => {
+        if (gen === undefined || gen === null) return '?';
+        return gen - generationOffset + 1;
+    }, [generationOffset]);
+
     // Compute layout — filter out hidden nodes from collapsed branches
     const layout = useMemo<LayoutResult | null>(() => {
         if (!displayData) return null;
@@ -499,8 +509,9 @@ export default function TreeViewPage() {
             const motherHidden = f.motherHandle ? hiddenHandles.has(f.motherHandle) : true;
             return !(fatherHidden && motherHidden);
         });
-        return computeLayout(visiblePeople, visibleFamilies);
-    }, [displayData, hiddenHandles]);
+        const normalizedPeople = visiblePeople.map(p => ({ ...p, generation: p.generation - generationOffset }));
+        return computeLayout(normalizedPeople, visibleFamilies);
+    }, [displayData, hiddenHandles, generationOffset]);
 
     // F4: Check if a person has children (for showing toggle button)
     const hasChildren = useCallback((handle: string): boolean => {
@@ -815,7 +826,7 @@ export default function TreeViewPage() {
                                         }}
                                             className="w-full text-left px-2.5 py-1.5 rounded text-xs hover:bg-accent transition-colors flex justify-between">
                                             <span className="font-medium">{p.displayName}</span>
-                                            <span className="text-muted-foreground">{'generation' in p ? `Đời ${(p as any).generation}` : ''}{p.isPrivacyFiltered ? ' 🔒' : ''}</span>
+                                            <span className="text-muted-foreground">{'generation' in p ? `Đời ${getDisplayGen((p as any).generation)}` : ''}{p.isPrivacyFiltered ? ' 🔒' : ''}</span>
                                         </button>
                                     ))}
                                 </CardContent>
@@ -902,6 +913,7 @@ export default function TreeViewPage() {
                                         zoomLevel={zoomLevel}
                                         showCollapseToggle={hasChildren(item.node.handle)}
                                         isCollapsed={collapsedBranches.has(item.node.handle)}
+                                        getDisplayGen={getDisplayGen}
                                         onHover={handleCardHover}
                                         onClick={handleCardClick}
                                         onSetFocus={handleCardFocus}
@@ -995,6 +1007,7 @@ export default function TreeViewPage() {
                     <EditorPanel
                         selectedCard={selectedCard}
                         treeData={treeData}
+                        getDisplayGen={getDisplayGen}
                         onReorderChildren={(familyHandle, newOrder) => {
                             setTreeData(prev => prev ? {
                                 ...prev,
@@ -1155,7 +1168,7 @@ const MemoPersonCard = memo(PersonCard, (prev, next) =>
     prev.isCollapsed === next.isCollapsed
 );
 
-function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isSelected, zoomLevel, showCollapseToggle, isCollapsed, onHover, onClick, onSetFocus, onToggleCollapse }: {
+function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isSelected, zoomLevel, showCollapseToggle, isCollapsed, getDisplayGen, onHover, onClick, onSetFocus, onToggleCollapse }: {
     item: PositionedNode;
     birthOrder: number;
     isHighlighted: boolean;
@@ -1165,6 +1178,7 @@ function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isS
     zoomLevel: ZoomLevel;
     showCollapseToggle: boolean;
     isCollapsed: boolean;
+    getDisplayGen: (gen?: number | null) => number | string;
     onHover: (h: string | null) => void;
     onClick: (handle: string, x: number, y: number) => void;
     onSetFocus: (handle: string) => void;
@@ -1193,7 +1207,7 @@ function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isS
                 {/* Tooltip on hover */}
                 <div className="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 z-50
                     bg-slate-900 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap pointer-events-none">
-                    {node.displayName} · Đời {item.generation + 1}
+                    {node.displayName} · Đời {getDisplayGen(item.generation)}
                 </div>
             </div>
         );
@@ -1251,7 +1265,7 @@ function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isS
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="font-semibold text-[10px] leading-tight text-slate-800 truncate">{node.displayName}</p>
-                        <span className="text-[8px] font-semibold px-0.5 py-px rounded bg-amber-100 text-amber-700">Đời {item.generation + 1}</span>
+                        <span className="text-[8px] font-semibold px-0.5 py-px rounded bg-amber-100 text-amber-700">Đời {getDisplayGen(item.generation)}</span>
                     </div>
                 </div>
                 {/* Collapse toggle */}
@@ -1311,7 +1325,7 @@ function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isS
                             : '—'}
                     </p>
                     <div className="mt-0.5 flex items-center gap-1">
-                        <span className="text-[9px] font-semibold px-1 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200/60">Đời {item.generation + 1}</span>
+                        <span className="text-[9px] font-semibold px-1 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200/60">Đời {getDisplayGen(item.generation)}</span>
                         {isDead ? (
                             <span className="text-[9px] text-slate-400">✝ Đã mất</span>
                         ) : (
@@ -1518,9 +1532,10 @@ function StatsOverlay({ stats, onClose }: { stats: TreeStats; onClose: () => voi
 }
 
 // === Editor Panel Component ===
-function EditorPanel({ selectedCard, treeData, onReorderChildren, onMoveChild, onRemoveChild, onToggleLiving, onUpdatePerson, onReset, onClose }: {
+function EditorPanel({ selectedCard, treeData, getDisplayGen, onReorderChildren, onMoveChild, onRemoveChild, onToggleLiving, onUpdatePerson, onReset, onClose }: {
     selectedCard: string | null;
     treeData: { people: TreeNode[]; families: TreeFamily[] } | null;
+    getDisplayGen: (gen?: number | null) => number | string;
     onReorderChildren: (familyHandle: string, newOrder: string[]) => void;
     onMoveChild: (childHandle: string, fromFamily: string, toFamily: string) => void;
     onRemoveChild: (childHandle: string, familyHandle: string) => void;
@@ -1646,7 +1661,7 @@ function EditorPanel({ selectedCard, treeData, onReorderChildren, onMoveChild, o
                 <div className="flex-1 overflow-y-auto">
                     {/* Editable person info */}
                     <div className="p-3 border-b space-y-2">
-                        <p className="text-xs text-muted-foreground">Đời {(person as any).generation ?? '?'} · {person.handle}</p>
+                        <p className="text-xs text-muted-foreground">Đời {getDisplayGen((person as any).generation)} · {person.handle}</p>
                         {parentPerson && (
                             <p className="text-xs text-muted-foreground">
                                 Cha: <span className="font-medium text-foreground">{parentPerson.displayName}</span>
