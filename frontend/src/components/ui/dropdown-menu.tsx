@@ -88,11 +88,13 @@ export function DropdownMenuContent({ className, ...props }: DropdownMenuContent
     const transform = (props.align ?? 'end') === 'end' ? 'translateX(-100%)' : 'translateX(0)';
     return (
         createPortal(
-            <div
-                className={cn('fixed rounded-md border bg-background p-2 shadow-xl min-w-56', className)}
-                style={{ top, left, transform, zIndex: 2147483647 }}
-                {...props}
-            />,
+            <div className="fixed inset-0" style={{ zIndex: 2147483647, pointerEvents: 'none' }}>
+                <div
+                    className={cn('fixed rounded-md border bg-background p-2 shadow-xl min-w-56', className)}
+                    style={{ top, left, transform, pointerEvents: 'auto' }}
+                    {...props}
+                />
+            </div>,
             document.body,
         )
     );
