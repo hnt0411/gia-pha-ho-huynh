@@ -113,7 +113,7 @@ function computeTreeStats(nodes: PositionedNode[], families: TreeFamily[]): Tree
     const genMap = new Map<number, number>();
     let living = 0, deceased = 0, patri = 0, nonPatri = 0;
     for (const n of nodes) {
-        const gen = n.generation + 1;
+        const gen = n.node.generation + 1;
         genMap.set(gen, (genMap.get(gen) ?? 0) + 1);
         if (n.node.isLiving) living++; else deceased++;
         if (n.node.isPatrilineal) patri++; else nonPatri++;
@@ -624,7 +624,7 @@ export default function TreeViewPage() {
     // Auto-fit on first load
     useEffect(() => {
         if (layout && !loading) setTimeout(fitAll, 50);
-    }, [layout, loading]); // eslint-disable-line
+    }, [layout, loading]);
 
     // === Mouse handlers ===
     const handleMouseDown = (e: React.MouseEvent) => {
@@ -1541,7 +1541,6 @@ function EditorPanel({ selectedCard, treeData, onReorderChildren, onMoveChild, o
     const person = selectedCard ? treeData.people.find(p => p.handle === selectedCard) : null;
 
     // Sync local state when selection changes
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
         if (person) {
             setEditName(person.displayName || '');
@@ -1554,7 +1553,6 @@ function EditorPanel({ selectedCard, treeData, onReorderChildren, onMoveChild, o
     }, [person?.handle]);
 
     // Close parent dropdown on outside click
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (parentSearchRef.current && !parentSearchRef.current.contains(e.target as Node)) {

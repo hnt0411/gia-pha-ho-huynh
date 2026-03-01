@@ -34,11 +34,20 @@ export async function updateFamilyChildren(familyHandle: string, newChildrenOrde
     await supabase.from('families').update({ children: newChildrenOrder }).eq('handle', familyHandle);
 }
 
-export async function moveChildToFamily(): Promise<void> {
+export async function moveChildToFamily(
+    _childHandle: string,
+    _fromFamily: string,
+    _toFamily: string,
+    _families: TreeFamily[],
+): Promise<void> {
     return;
 }
 
-export async function removeChildFromFamily(): Promise<void> {
+export async function removeChildFromFamily(
+    _childHandle: string,
+    _familyHandle: string,
+    _families: TreeFamily[],
+): Promise<void> {
     return;
 }
 
