@@ -31,6 +31,15 @@ export function Header() {
         router.push('/login');
     };
     const profileHref = profile?.id ? `/directory/${profile.id}` : '#';
+    const handleProfilePointerDown = (e: React.PointerEvent<HTMLAnchorElement>) => {
+        if (!profile?.id) {
+            e.preventDefault();
+            return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        router.push(profileHref);
+    };
 
     return (
         <header className="sticky top-0 z-[1000] flex h-14 items-center justify-between border-b bg-card/80 backdrop-blur-sm px-4 lg:px-6">
@@ -86,13 +95,11 @@ export function Header() {
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem asChild closeOnSelect={false}>
+                            <DropdownMenuItem asChild>
                                 <Link
                                     href={profileHref}
                                     className="flex w-full items-center gap-2.5 px-3 py-2"
-                                    onClick={(e) => {
-                                        if (!profile?.id) e.preventDefault();
-                                    }}
+                                    onPointerDown={handleProfilePointerDown}
                                 >
                                     <User className="h-4 w-4" />
                                     Hồ sơ cá nhân
