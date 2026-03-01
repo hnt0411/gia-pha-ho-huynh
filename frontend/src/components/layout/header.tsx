@@ -3,6 +3,7 @@
 import { Moon, Sun, LogOut, User, LogIn } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -29,9 +30,7 @@ export function Header() {
         await signOut();
         router.push('/login');
     };
-    const handleProfile = () => {
-        if (profile?.id) router.push(`/directory/${profile.id}`);
-    };
+    const profileHref = profile?.id ? `/directory/${profile.id}` : '#';
 
     return (
         <header className="sticky top-0 z-[1000] flex h-14 items-center justify-between border-b bg-card/80 backdrop-blur-sm px-4 lg:px-6">
@@ -87,9 +86,17 @@ export function Header() {
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onMouseDown={handleProfile} onClick={handleProfile} closeOnSelect={false}>
-                                <User className="mr-2 h-4 w-4" />
-                                Hồ sơ cá nhân
+                            <DropdownMenuItem closeOnSelect={false} className="p-0">
+                                <Link
+                                    href={profileHref}
+                                    className="flex w-full items-center gap-2.5 px-3 py-2"
+                                    onClick={(e) => {
+                                        if (!profile?.id) e.preventDefault();
+                                    }}
+                                >
+                                    <User className="h-4 w-4" />
+                                    Hồ sơ cá nhân
+                                </Link>
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem className="text-destructive" onClick={handleSignOut}>
