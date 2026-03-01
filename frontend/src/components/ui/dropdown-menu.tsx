@@ -119,11 +119,15 @@ export function DropdownMenuContent({ className, ...props }: DropdownMenuContent
     );
 }
 
-export function DropdownMenuItem({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+export function DropdownMenuItem({
+    className,
+    closeOnSelect = true,
+    ...props
+}: HTMLAttributes<HTMLDivElement> & { closeOnSelect?: boolean }) {
     const ctx = useContext(DropdownContext);
     const handleClick = (event: MouseEvent<HTMLDivElement>) => {
         props.onClick?.(event);
-        if (ctx) ctx.setOpen(false);
+        if (ctx && closeOnSelect) ctx.setOpen(false);
     };
     return (
         <div

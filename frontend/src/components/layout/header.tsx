@@ -87,7 +87,7 @@ export function Header() {
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onMouseDown={handleProfile} onClick={handleProfile}>
+                            <DropdownMenuItem onMouseDown={handleProfile} onClick={handleProfile} closeOnSelect={false}>
                                 <User className="mr-2 h-4 w-4" />
                                 Hồ sơ cá nhân
                             </DropdownMenuItem>
