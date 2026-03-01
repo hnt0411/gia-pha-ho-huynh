@@ -1,7 +1,8 @@
 'use client';
 
-import { createContext, useContext, useState, cloneElement, isValidElement } from 'react';
+import { createContext, useContext, useState, cloneElement, isValidElement, useEffect } from 'react';
 import type { HTMLAttributes, ReactNode, ReactElement, MouseEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 
 interface DropdownMenuProps {
@@ -11,14 +12,20 @@ interface DropdownMenuProps {
 interface DropdownContextValue {
     open: boolean;
     setOpen: (open: boolean) => void;
+    anchorEl: HTMLElement | null;
+    setAnchorEl: (el: HTMLElement | null) => void;
+    anchorRect: DOMRect | null;
+    setAnchorRect: (rect: DOMRect | null) => void;
 }
 
 const DropdownContext = createContext<DropdownContextValue | null>(null);
 
 export function DropdownMenu({ children }: DropdownMenuProps) {
     const [open, setOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
     return (
-        <DropdownContext.Provider value={{ open, setOpen }}>
+        <DropdownContext.Provider value={{ open, setOpen, anchorEl, setAnchorEl, anchorRect, setAnchorRect }}>
             <div className="relative">{children}</div>
         </DropdownContext.Provider>
     );
@@ -32,7 +39,14 @@ export function DropdownMenuTrigger({ className, asChild, children, onClick, ...
     const ctx = useContext(DropdownContext);
     const handleClick = (event: MouseEvent<HTMLDivElement>) => {
         onClick?.(event);
-        if (ctx) ctx.setOpen(!ctx.open);
+        if (ctx) {
+            const el = event.currentTarget as HTMLElement;
+            if (!ctx.open) {
+                ctx.setAnchorEl(el);
+                ctx.setAnchorRect(el.getBoundingClientRect());
+            }
+            ctx.setOpen(!ctx.open);
+        }
     };
     if (asChild && isValidElement(children)) {
         const child = children as ReactElement<any>;
@@ -57,11 +71,30 @@ interface DropdownMenuContentProps extends HTMLAttributes<HTMLDivElement> {
 export function DropdownMenuContent({ className, ...props }: DropdownMenuContentProps) {
     const ctx = useContext(DropdownContext);
     if (!ctx?.open) return null;
+    useEffect(() => {
+        if (!ctx.anchorEl) return;
+        const update = () => ctx.setAnchorRect(ctx.anchorEl?.getBoundingClientRect() ?? null);
+        update();
+        window.addEventListener('resize', update);
+        window.addEventListener('scroll', update, true);
+        return () => {
+            window.removeEventListener('resize', update);
+            window.removeEventListener('scroll', update, true);
+        };
+    }, [ctx.anchorEl, ctx]);
+    const rect = ctx.anchorRect;
+    const top = (rect?.bottom ?? 0) + 8;
+    const left = (props.align ?? 'end') === 'end' ? (rect?.right ?? 0) : (rect?.left ?? 0);
+    const transform = (props.align ?? 'end') === 'end' ? 'translateX(-100%)' : 'translateX(0)';
     return (
-        <div
-            className={cn('absolute right-0 top-full mt-2 rounded-md border bg-background p-2 shadow-xl z-[600] min-w-56', className)}
-            {...props}
-        />
+        createPortal(
+            <div
+                className={cn('fixed rounded-md border bg-background p-2 shadow-xl z-[2000] min-w-56', className)}
+                style={{ top, left, transform }}
+                {...props}
+            />,
+            document.body,
+        )
     );
 }
 
