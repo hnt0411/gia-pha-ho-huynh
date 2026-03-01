@@ -109,6 +109,7 @@ export function DropdownMenuContent({ className, ...props }: DropdownMenuContent
                     ref={contentRef}
                     {...props}
                     onMouseDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
                 />
             </div>,
             document.body,
