@@ -59,7 +59,7 @@ export function DropdownMenuContent({ className, ...props }: DropdownMenuContent
     if (!ctx?.open) return null;
     return (
         <div
-            className={cn('absolute right-0 mt-2 rounded-md border bg-card p-2 shadow z-50', className)}
+            className={cn('absolute right-0 top-full mt-2 rounded-md border bg-card p-2 shadow-lg z-[200] min-w-56', className)}
             {...props}
         />
     );
