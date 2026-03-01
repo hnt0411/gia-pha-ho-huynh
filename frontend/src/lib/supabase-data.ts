@@ -17,6 +17,8 @@ export async function fetchTreeData(): Promise<{ people: TreeNode[]; families: T
             isPatrilineal: row.is_patrilineal as boolean,
             families: (row.families as string[]) || [],
             parentFamilies: (row.parent_families as string[]) || [],
+            birthYear: row.birth_year as number | undefined,
+            deathYear: row.death_year as number | undefined,
         }));
         const families = (familiesRes.data || []).map((row) => ({
             handle: row.handle as string,

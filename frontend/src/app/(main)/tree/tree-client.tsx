@@ -1204,6 +1204,8 @@ function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isS
     const initials = nameParts.length >= 2
         ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
         : node.displayName.slice(0, 2).toUpperCase();
+    const surnameLabel = nameParts[0] || '';
+    const surnameBadge = surnameLabel.length <= 2 ? surnameLabel : surnameLabel.slice(0, 2);
 
     const avatarBg = !isPatri
         ? 'bg-stone-300 text-stone-600'
@@ -1292,9 +1294,9 @@ function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isS
                         font-bold text-sm shadow-sm ring-1 ring-black/5 ${avatarBg} ${isDead ? 'opacity-60' : ''}`}>
                         {initials}
                     </div>
-                    {isPatri && (
+                    {isPatri && surnameBadge && (
                         <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500
-                            text-white text-[8px] flex items-center justify-center shadow-sm font-bold ring-1 ring-white">Lê</span>
+                            text-white text-[8px] flex items-center justify-center shadow-sm font-bold ring-1 ring-white">{surnameBadge}</span>
                     )}
                 </div>
 
