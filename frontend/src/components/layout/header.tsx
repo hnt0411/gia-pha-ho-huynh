@@ -29,6 +29,9 @@ export function Header() {
         await signOut();
         router.push('/login');
     };
+    const handleProfile = () => {
+        if (profile?.id) router.push(`/directory/${profile.id}`);
+    };
 
     return (
         <header className="sticky top-0 z-[1000] flex h-14 items-center justify-between border-b bg-card/80 backdrop-blur-sm px-4 lg:px-6">
@@ -84,7 +87,7 @@ export function Header() {
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => { if (profile?.id) router.push(`/directory/${profile.id}`); }}>
+                            <DropdownMenuItem onMouseDown={handleProfile} onClick={handleProfile}>
                                 <User className="mr-2 h-4 w-4" />
                                 Hồ sơ cá nhân
                             </DropdownMenuItem>
