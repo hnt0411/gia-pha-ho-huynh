@@ -26,6 +26,7 @@ export type PersonDetail = {
     education?: string;
     notes?: string;
     biography?: string;
+    tags?: string[];
     chi?: number;
     zalo?: string;
     facebook?: string;
