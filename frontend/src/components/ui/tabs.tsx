@@ -11,11 +11,18 @@ type TabsContextValue = {
 const TabsContext = createContext<TabsContextValue | null>(null);
 
 interface TabsProps extends HTMLAttributes<HTMLDivElement> {
-    defaultValue: string;
+    defaultValue?: string;
+    value?: string;
+    onValueChange?: (value: string) => void;
 }
 
-export function Tabs({ defaultValue, className, children, ...props }: TabsProps) {
-    const [value, setValue] = useState(defaultValue);
+export function Tabs({ defaultValue, value: valueProp, onValueChange, className, children, ...props }: TabsProps) {
+    const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue ?? '');
+    const value = valueProp ?? uncontrolledValue;
+    const setValue = (next: string) => {
+        if (valueProp === undefined) setUncontrolledValue(next);
+        onValueChange?.(next);
+    };
     return (
         <TabsContext.Provider value={{ value, setValue }}>
             <div className={cn('space-y-4', className)} {...props}>{children}</div>
