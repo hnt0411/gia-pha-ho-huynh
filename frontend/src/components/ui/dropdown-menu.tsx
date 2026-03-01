@@ -82,17 +82,6 @@ export function DropdownMenuContent({ className, ...props }: DropdownMenuContent
             window.removeEventListener('scroll', update, true);
         };
     }, [ctx?.anchorEl, ctx?.open, ctx]);
-    useEffect(() => {
-        if (!ctx?.open) return;
-        const handleClickOutside = (e: Event) => {
-            const target = e.target as Node;
-            if (ctx.anchorEl && ctx.anchorEl.contains(target)) return;
-            if (contentRef.current && contentRef.current.contains(target)) return;
-            ctx.setOpen(false);
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [ctx?.open, ctx?.anchorEl, ctx]);
     if (!ctx?.open) return null;
     const rect = ctx.anchorRect;
     const top = (rect?.bottom ?? 0) + 8;
@@ -100,12 +89,26 @@ export function DropdownMenuContent({ className, ...props }: DropdownMenuContent
     const transform = (props.align ?? 'end') === 'end' ? 'translateX(-100%)' : 'translateX(0)';
     return (
         createPortal(
-            <div className="fixed inset-0" style={{ zIndex: 2147483647, pointerEvents: 'none' }}>
+            <div
+                className="fixed inset-0"
+                style={{ zIndex: 2147483647 }}
+                onMouseDown={(e) => {
+                    if (e.target === e.currentTarget) ctx.setOpen(false);
+                }}
+            >
                 <div
-                    className={cn('fixed rounded-md border border-slate-200 bg-white text-slate-900 dark:bg-white dark:text-slate-900 p-2 shadow-xl min-w-56', className)}
-                    style={{ top, left, transform, pointerEvents: 'auto' }}
+                    className={cn('fixed rounded-md border bg-card text-card-foreground p-2 shadow-xl min-w-56', className)}
+                    style={{
+                        top,
+                        left,
+                        transform,
+                        backgroundColor: 'hsl(var(--card))',
+                        color: 'hsl(var(--card-foreground))',
+                        borderColor: 'hsl(var(--border))',
+                    }}
                     ref={contentRef}
                     {...props}
+                    onMouseDown={(e) => e.stopPropagation()}
                 />
             </div>,
             document.body,
