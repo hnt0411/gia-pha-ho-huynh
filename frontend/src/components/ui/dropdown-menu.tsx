@@ -102,7 +102,7 @@ export function DropdownMenuContent({ className, ...props }: DropdownMenuContent
         createPortal(
             <div className="fixed inset-0" style={{ zIndex: 2147483647, pointerEvents: 'none' }}>
                 <div
-                    className={cn('fixed rounded-md border bg-white dark:bg-slate-900 p-2 shadow-xl min-w-56', className)}
+                    className={cn('fixed rounded-md border border-slate-200 bg-white text-slate-900 dark:bg-white dark:text-slate-900 p-2 shadow-xl min-w-56', className)}
                     style={{ top, left, transform, pointerEvents: 'auto' }}
                     ref={contentRef}
                     {...props}
