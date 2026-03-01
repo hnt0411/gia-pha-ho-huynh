@@ -6,6 +6,7 @@ import { TreePine, Eye, EyeOff, UserPlus, LogIn } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +28,15 @@ export default function LoginPage() {
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
     const [mode, setMode] = useState<'login' | 'register'>('login');
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === 'dark';
+    const textColor = isDark ? '#e2e8f0' : '#0f172a';
+    const mutedColor = isDark ? '#cbd5e1' : '#475569';
+    const inputStyle = {
+        color: textColor,
+        backgroundColor: isDark ? 'rgba(15, 23, 42, 0.7)' : '#ffffff',
+        borderColor: isDark ? '#334155' : '#e2e8f0',
+    };
 
     const {
         register,
@@ -72,8 +82,8 @@ export default function LoginPage() {
                         <TreePine className="h-8 w-8 text-primary" />
                     </div>
                 </div>
-                <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100">Gia phả họ Huỳnh</CardTitle>
-                <CardDescription className="text-slate-600 dark:text-slate-300">
+                <CardTitle className="text-2xl font-bold" style={{ color: textColor }}>Gia phả họ Huỳnh</CardTitle>
+                <CardDescription style={{ color: mutedColor }}>
                     {mode === 'login'
                         ? 'Đăng nhập để quản lý & đóng góp thông tin'
                         : 'Đăng ký tài khoản thành viên dòng họ'
@@ -91,32 +101,36 @@ export default function LoginPage() {
 
                     {mode === 'register' && (
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="displayName">Họ tên</label>
+                            <label className="text-sm font-medium" htmlFor="displayName" style={{ color: textColor }}>Họ tên</label>
                             <Input id="displayName" placeholder="Huỳnh Văn A" {...register('displayName')}
-                                className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500" />
+                                className="placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                style={inputStyle} />
                         </div>
                     )}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="email">Email</label>
+                        <label className="text-sm font-medium" htmlFor="email" style={{ color: textColor }}>Email</label>
                         <Input id="email" type="email" placeholder="email@example.com" {...register('email')}
-                            className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500" />
+                            className="placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                            style={inputStyle} />
                         {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="password">Mật khẩu</label>
+                        <label className="text-sm font-medium" htmlFor="password" style={{ color: textColor }}>Mật khẩu</label>
                         <div className="relative">
                             <Input
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="••••••••"
                                 {...register('password')}
-                                className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                className="placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                style={inputStyle}
                             />
                             <button
                                 type="button"
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                className="absolute right-3 top-1/2 -translate-y-1/2"
+                                style={{ color: mutedColor }}
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -135,13 +149,20 @@ export default function LoginPage() {
 
                     <div className="relative my-2">
                         <div className="absolute inset-0 flex items-center"><div className="w-full border-t" /></div>
-                        <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">hoặc</span></div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-card px-2" style={{ color: mutedColor }}>hoặc</span>
+                        </div>
                     </div>
 
                     <Button
                         type="button"
                         variant="outline"
-                        className="w-full border-2 shadow-sm hover:shadow-md bg-white/80 dark:bg-slate-900/60"
+                        className="w-full border-2 shadow-sm hover:shadow-md"
+                        style={{
+                            backgroundColor: isDark ? 'rgba(15, 23, 42, 0.6)' : 'rgba(255, 255, 255, 0.8)',
+                            borderColor: isDark ? '#334155' : '#e2e8f0',
+                            color: textColor,
+                        }}
                         onClick={() => { setMode(m => m === 'login' ? 'register' : 'login'); setError(''); setSuccess(''); }}
                     >
                         {mode === 'login'

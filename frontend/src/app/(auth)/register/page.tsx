@@ -6,6 +6,7 @@ import { TreePine, Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +31,15 @@ function RegisterContent() {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === 'dark';
+    const textColor = isDark ? '#e2e8f0' : '#0f172a';
+    const mutedColor = isDark ? '#cbd5e1' : '#475569';
+    const inputStyle = {
+        color: textColor,
+        backgroundColor: isDark ? 'rgba(15, 23, 42, 0.7)' : '#ffffff',
+        borderColor: isDark ? '#334155' : '#e2e8f0',
+    };
 
     const {
         register,
@@ -114,8 +124,8 @@ function RegisterContent() {
                         <TreePine className="h-8 w-8 text-primary" />
                     </div>
                 </div>
-                <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100">Tham gia Gia phả họ Huỳnh</CardTitle>
-                <CardDescription className="text-slate-600 dark:text-slate-300">Đăng ký tham gia nền tảng gia phả dòng họ</CardDescription>
+                <CardTitle className="text-2xl font-bold" style={{ color: textColor }}>Tham gia Gia phả họ Huỳnh</CardTitle>
+                <CardDescription style={{ color: mutedColor }}>Đăng ký tham gia nền tảng gia phả dòng họ</CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -130,32 +140,36 @@ function RegisterContent() {
                     )}
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="displayName">Tên hiển thị</label>
+                        <label className="text-sm font-medium" htmlFor="displayName" style={{ color: textColor }}>Tên hiển thị</label>
                         <Input id="displayName" placeholder="Huỳnh Văn A" {...register('displayName')}
-                            className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500" />
+                            className="placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                            style={inputStyle} />
                         {errors.displayName && <p className="text-xs text-destructive">{errors.displayName.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="email">Email</label>
+                        <label className="text-sm font-medium" htmlFor="email" style={{ color: textColor }}>Email</label>
                         <Input id="email" type="email" placeholder="email@example.com" {...register('email')}
-                            className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500" />
+                            className="placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                            style={inputStyle} />
                         {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="password">Mật khẩu</label>
+                        <label className="text-sm font-medium" htmlFor="password" style={{ color: textColor }}>Mật khẩu</label>
                         <div className="relative">
                             <Input
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="Tối thiểu 8 ký tự"
                                 {...register('password')}
-                                className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                className="placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                                style={inputStyle}
                             />
                             <button
                                 type="button"
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                className="absolute right-3 top-1/2 -translate-y-1/2"
+                                style={{ color: mutedColor }}
                                 onClick={() => setShowPassword(!showPassword)}
                             >
                                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -165,13 +179,14 @@ function RegisterContent() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="confirmPassword">Xác nhận mật khẩu</label>
+                        <label className="text-sm font-medium" htmlFor="confirmPassword" style={{ color: textColor }}>Xác nhận mật khẩu</label>
                         <Input
                             id="confirmPassword"
                             type="password"
                             placeholder="Nhập lại mật khẩu"
                             {...register('confirmPassword')}
-                            className="text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                            className="placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                            style={inputStyle}
                         />
                         {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>}
                     </div>
