@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useTheme } from 'next-themes';
 import { Printer, ArrowLeft, BookOpen, Eye, Palette, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { fetchTreeData } from '@/lib/supabase-data';
@@ -57,6 +58,8 @@ export default function BookPage() {
     const [theme, setTheme] = useState<ThemeKey>('amber');
     const [showThemePicker, setShowThemePicker] = useState(false);
     const pagesRef = useRef<HTMLDivElement>(null);
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === 'dark';
 
     // Auto-scroll to top when entering preview mode
     useEffect(() => {
@@ -222,7 +225,14 @@ export default function BookPage() {
     return (
         <div className="min-w-0 w-full overflow-hidden">
             {/* ═══ TOOLBAR ═══ */}
-            <div className="no-print sticky top-0 z-50 bg-white text-slate-900 dark:bg-slate-900/90 dark:text-slate-100 backdrop-blur-lg border-b border-slate-200 dark:border-border shadow-sm">
+            <div
+                className="no-print sticky top-0 z-50 backdrop-blur-lg border-b shadow-sm"
+                style={{
+                    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.9)' : '#ffffff',
+                    color: isDark ? '#f8fafc' : '#0f172a',
+                    borderColor: isDark ? 'hsl(var(--border))' : '#e2e8f0',
+                }}
+            >
                 <div className="px-4 py-2.5 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Link href="/tree">
