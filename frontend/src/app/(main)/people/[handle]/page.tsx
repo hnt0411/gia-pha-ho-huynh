@@ -36,26 +36,70 @@ export default function PersonProfilePage() {
         setIsEditing(false);
     };
 
+    const mapPersonRow = (row: Record<string, unknown>): PersonDetail => ({
+        handle: row.handle as string,
+        displayName: row.display_name as string,
+        gender: row.gender as number,
+        birthYear: row.birth_year as number | undefined,
+        deathYear: row.death_year as number | undefined,
+        generation: row.generation as number,
+        isLiving: row.is_living as boolean,
+        isPrivacyFiltered: row.is_privacy_filtered as boolean,
+        isPatrilineal: row.is_patrilineal as boolean,
+        families: (row.families as string[]) || [],
+        parentFamilies: (row.parent_families as string[]) || [],
+        surname: row.surname as string | undefined,
+        firstName: row.first_name as string | undefined,
+        nickName: row.nick_name as string | undefined,
+        birthDate: row.birth_date as string | undefined,
+        birthPlace: row.birth_place as string | undefined,
+        deathDate: row.death_date as string | undefined,
+        deathPlace: row.death_place as string | undefined,
+        phone: row.phone as string | undefined,
+        email: row.email as string | undefined,
+        currentAddress: row.current_address as string | undefined,
+        hometown: row.hometown as string | undefined,
+        occupation: row.occupation as string | undefined,
+        company: row.company as string | undefined,
+        education: row.education as string | undefined,
+        notes: row.notes as string | undefined,
+        biography: row.biography as string | undefined,
+        tags: row.tags as string[] | undefined,
+        chi: row.chi as number | undefined,
+        zalo: row.zalo as string | undefined,
+        facebook: row.facebook as string | undefined,
+        mediaCount: row.media_count as number | undefined,
+        _privacyNote: row.privacy_note as string | undefined,
+    });
+
     const handleSave = async () => {
-        if (Object.keys(editedPerson).length === 0) {
+        const updateFields: Record<string, unknown> = {};
+        if (editedPerson.surname !== undefined) updateFields.surname = editedPerson.surname;
+        if (editedPerson.firstName !== undefined) updateFields.first_name = editedPerson.firstName;
+        if (editedPerson.nickName !== undefined) updateFields.nick_name = editedPerson.nickName;
+        if (editedPerson.birthDate !== undefined) updateFields.birth_date = editedPerson.birthDate;
+        if (editedPerson.birthPlace !== undefined) updateFields.birth_place = editedPerson.birthPlace;
+        if (editedPerson.deathDate !== undefined) updateFields.death_date = editedPerson.deathDate;
+        if (editedPerson.deathPlace !== undefined) updateFields.death_place = editedPerson.deathPlace;
+        if (Object.keys(updateFields).length === 0) {
             setIsEditing(false);
+            setEditedPerson({});
             return;
         }
 
         const { supabase } = await import('@/lib/supabase');
         const { data, error } = await supabase
             .from('people')
-            .update(editedPerson)
+            .update(updateFields)
             .eq('handle', handle)
             .select()
             .single();
 
         if (!error && data) {
-            setPerson(prev => prev ? { ...prev, ...data } : null);
+            setPerson(mapPersonRow(data as Record<string, unknown>));
             setEditedPerson({});
             setIsEditing(false);
         } else {
-            // Handle error (e.g., show a toast notification)
             console.error('Failed to update person:', error);
         }
     };
@@ -71,27 +115,7 @@ export default function PersonProfilePage() {
                     .eq('handle', handle)
                     .single();
                 if (!error && data) {
-                    const row = data as Record<string, unknown>;
-                    setPerson({
-                        handle: row.handle as string,
-                        displayName: row.display_name as string,
-                        gender: row.gender as number,
-                        birthYear: row.birth_year as number | undefined,
-                        deathYear: row.death_year as number | undefined,
-                        generation: row.generation as number,
-                        isLiving: row.is_living as boolean,
-                        isPrivacyFiltered: row.is_privacy_filtered as boolean,
-                        isPatrilineal: row.is_patrilineal as boolean,
-                        families: (row.families as string[]) || [],
-                        parentFamilies: (row.parent_families as string[]) || [],
-                        phone: row.phone as string | undefined,
-                        email: row.email as string | undefined,
-                        currentAddress: row.current_address as string | undefined,
-                        hometown: row.hometown as string | undefined,
-                        occupation: row.occupation as string | undefined,
-                        education: row.education as string | undefined,
-                        notes: row.notes as string | undefined,
-                    } as PersonDetail);
+                    setPerson(mapPersonRow(data as Record<string, unknown>));
                 }
             } catch { /* ignore */ }
             setLoading(false);
