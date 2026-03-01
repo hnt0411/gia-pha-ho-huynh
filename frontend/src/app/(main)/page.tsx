@@ -19,17 +19,27 @@ interface Stats {
 export default function HomePage() {
     const [stats, setStats] = useState<Stats>({ people: 0, families: 0, profiles: 0, posts: 0, events: 0, media: 0 });
     const [loading, setLoading] = useState(true);
+    const optionalEnabled = process.env.NEXT_PUBLIC_ENABLE_OPTIONAL_TABLES === 'true';
 
     useEffect(() => {
         async function fetchStats() {
             try {
-                const tables = ['people', 'families', 'profiles', 'posts', 'events', 'media'] as const;
+                const tables = optionalEnabled
+                    ? ['people', 'families', 'profiles', 'posts', 'events', 'media']
+                    : ['people', 'families', 'profiles'];
                 const counts: Record<string, number> = {};
                 for (const t of tables) {
                     const { count } = await supabase.from(t).select('*', { count: 'exact', head: true });
                     counts[t] = count || 0;
                 }
-                setStats(counts as unknown as Stats);
+                setStats({
+                    people: counts.people ?? 0,
+                    families: counts.families ?? 0,
+                    profiles: counts.profiles ?? 0,
+                    posts: counts.posts ?? 0,
+                    events: counts.events ?? 0,
+                    media: counts.media ?? 0,
+                });
             } catch { /* ignore */ }
             finally { setLoading(false); }
         }

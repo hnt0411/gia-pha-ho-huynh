@@ -79,10 +79,13 @@ export default function BackupPage() {
 function DatabaseStats() {
     const [stats, setStats] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
+    const optionalEnabled = process.env.NEXT_PUBLIC_ENABLE_OPTIONAL_TABLES === 'true';
 
     useEffect(() => {
         async function load() {
-            const tables = ['people', 'families', 'profiles', 'posts', 'comments', 'events', 'notifications'];
+            const tables = optionalEnabled
+                ? ['people', 'families', 'profiles', 'posts', 'comments', 'events', 'notifications']
+                : ['people', 'families', 'profiles'];
             const counts: Record<string, number> = {};
             for (const t of tables) {
                 const { count } = await supabase.from(t).select('*', { count: 'exact', head: true });
