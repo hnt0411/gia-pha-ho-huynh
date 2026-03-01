@@ -3,6 +3,7 @@ export type TreeNode = {
     displayName: string;
     gender: number;
     generation: number;
+    originalGeneration?: number;
     isLiving: boolean;
     isPrivacyFiltered: boolean;
     isPatrilineal: boolean;

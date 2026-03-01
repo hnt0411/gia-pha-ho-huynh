@@ -109,11 +109,12 @@ interface TreeStats {
     nonPatrilinealCount: number;
 }
 
-function computeTreeStats(nodes: PositionedNode[], families: TreeFamily[]): TreeStats {
+function computeTreeStats(nodes: PositionedNode[], families: TreeFamily[], generationOffset: number): TreeStats {
     const genMap = new Map<number, number>();
     let living = 0, deceased = 0, patri = 0, nonPatri = 0;
     for (const n of nodes) {
-        const gen = n.node.generation + 1;
+        const rawGen = n.node.originalGeneration ?? n.node.generation;
+        const gen = rawGen - generationOffset + 1;
         genMap.set(gen, (genMap.get(gen) ?? 0) + 1);
         if (n.node.isLiving) living++; else deceased++;
         if (n.node.isPatrilineal) patri++; else nonPatri++;
@@ -490,7 +491,7 @@ export default function TreeViewPage() {
         return treeData.people.reduce((min, p) => Math.min(min, p.generation ?? min), treeData.people[0].generation ?? 0);
     }, [treeData]);
 
-    const getDisplayGen = useCallback((gen?: number) => {
+    const getDisplayGen = useCallback((gen?: number | null) => {
         if (gen === undefined || gen === null) return '?';
         return gen - generationOffset + 1;
     }, [generationOffset]);
@@ -509,7 +510,11 @@ export default function TreeViewPage() {
             const motherHidden = f.motherHandle ? hiddenHandles.has(f.motherHandle) : true;
             return !(fatherHidden && motherHidden);
         });
-        const normalizedPeople = visiblePeople.map(p => ({ ...p, generation: p.generation - generationOffset }));
+        const normalizedPeople = visiblePeople.map(p => ({
+            ...p,
+            originalGeneration: p.generation,
+            generation: p.generation - generationOffset,
+        }));
         return computeLayout(normalizedPeople, visibleFamilies);
     }, [displayData, hiddenHandles, generationOffset]);
 
@@ -524,19 +529,22 @@ export default function TreeViewPage() {
     // F3: Stats computed from full layout
     const treeStats = useMemo<TreeStats | null>(() => {
         if (!layout || !treeData) return null;
-        return computeTreeStats(layout.nodes, treeData.families);
-    }, [layout, treeData]);
+        return computeTreeStats(layout.nodes, treeData.families, generationOffset);
+    }, [layout, treeData, generationOffset]);
 
     // F2: Generation stats for headers
     const generationStats = useMemo(() => {
         if (!layout) return new Map<number, number>();
         const map = new Map<number, number>();
         for (const n of layout.nodes) {
-            const gen = n.generation + 1;
-            map.set(gen, (map.get(gen) ?? 0) + 1);
+            const rawGen = n.node.originalGeneration ?? n.node.generation;
+            const gen = getDisplayGen(rawGen);
+            if (typeof gen === 'number') {
+                map.set(gen, (map.get(gen) ?? 0) + 1);
+            }
         }
         return map;
-    }, [layout]);
+    }, [layout, getDisplayGen]);
 
     // ═══ Viewport culling: only render visible nodes ═══
     const CULL_PAD = 300; // px padding around viewport
@@ -1207,7 +1215,7 @@ function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isS
                 {/* Tooltip on hover */}
                 <div className="hidden group-hover:block absolute -top-8 left-1/2 -translate-x-1/2 z-50
                     bg-slate-900 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap pointer-events-none">
-                    {node.displayName} · Đời {getDisplayGen(item.generation)}
+                    {node.displayName} · Đời {getDisplayGen(item.node.originalGeneration ?? item.generation)}
                 </div>
             </div>
         );
@@ -1265,7 +1273,7 @@ function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isS
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="font-semibold text-[10px] leading-tight text-slate-800 truncate">{node.displayName}</p>
-                        <span className="text-[8px] font-semibold px-0.5 py-px rounded bg-amber-100 text-amber-700">Đời {getDisplayGen(item.generation)}</span>
+                        <span className="text-[8px] font-semibold px-0.5 py-px rounded bg-amber-100 text-amber-700">Đời {getDisplayGen(item.node.originalGeneration ?? item.generation)}</span>
                     </div>
                 </div>
                 {/* Collapse toggle */}
@@ -1325,7 +1333,7 @@ function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isS
                             : '—'}
                     </p>
                     <div className="mt-0.5 flex items-center gap-1">
-                        <span className="text-[9px] font-semibold px-1 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200/60">Đời {getDisplayGen(item.generation)}</span>
+                        <span className="text-[9px] font-semibold px-1 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200/60">Đời {getDisplayGen(item.node.originalGeneration ?? item.generation)}</span>
                         {isDead ? (
                             <span className="text-[9px] text-slate-400">✝ Đã mất</span>
                         ) : (
