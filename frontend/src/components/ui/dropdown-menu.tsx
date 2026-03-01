@@ -121,14 +121,32 @@ export function DropdownMenuContent({ className, ...props }: DropdownMenuContent
 
 export function DropdownMenuItem({
     className,
+    asChild,
     closeOnSelect = true,
     ...props
-}: HTMLAttributes<HTMLDivElement> & { closeOnSelect?: boolean }) {
+}: HTMLAttributes<HTMLDivElement> & { closeOnSelect?: boolean; asChild?: boolean }) {
     const ctx = useContext(DropdownContext);
     const handleClick = (event: MouseEvent<HTMLDivElement>) => {
         props.onClick?.(event);
         if (ctx && closeOnSelect) ctx.setOpen(false);
     };
+    if (asChild && isValidElement(props.children)) {
+        const child = props.children as ReactElement<any>;
+        return cloneElement(child, {
+            onClick: (event: MouseEvent<HTMLDivElement>) => {
+                child.props?.onClick?.(event);
+                props.onClick?.(event);
+                if (ctx && closeOnSelect) ctx.setOpen(false);
+            },
+            className: cn(
+                'cursor-pointer rounded-md border border-border/60 px-3 py-2 text-sm font-medium text-foreground',
+                'flex items-center gap-2.5 transition-colors',
+                'hover:bg-accent/60 hover:border-border',
+                child.props?.className,
+                className,
+            ),
+        });
+    }
     return (
         <div
             className={cn(

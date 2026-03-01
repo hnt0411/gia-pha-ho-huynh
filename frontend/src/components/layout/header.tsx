@@ -86,7 +86,7 @@ export function Header() {
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem closeOnSelect={false} className="p-0">
+                            <DropdownMenuItem asChild closeOnSelect={false}>
                                 <Link
                                     href={profileHref}
                                     className="flex w-full items-center gap-2.5 px-3 py-2"
