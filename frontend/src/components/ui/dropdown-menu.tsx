@@ -89,8 +89,8 @@ export function DropdownMenuContent({ className, ...props }: DropdownMenuContent
     return (
         createPortal(
             <div
-                className={cn('fixed rounded-md border bg-background p-2 shadow-xl z-[2000] min-w-56', className)}
-                style={{ top, left, transform }}
+                className={cn('fixed rounded-md border bg-background p-2 shadow-xl min-w-56', className)}
+                style={{ top, left, transform, zIndex: 2147483647 }}
                 {...props}
             />,
             document.body,
