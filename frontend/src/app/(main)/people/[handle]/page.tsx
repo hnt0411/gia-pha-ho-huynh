@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { ArrowLeft, User, Heart, Image, FileText, History, Lock, Phone, MapPin, Briefcase, GraduationCap, Tag, MessageCircle, Pencil, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -77,6 +76,7 @@ export default function PersonProfilePage() {
         if (editedPerson.surname !== undefined) updateFields.surname = editedPerson.surname;
         if (editedPerson.firstName !== undefined) updateFields.first_name = editedPerson.firstName;
         if (editedPerson.nickName !== undefined) updateFields.nick_name = editedPerson.nickName;
+        if (editedPerson.isLiving !== undefined) updateFields.is_living = editedPerson.isLiving;
         if (editedPerson.birthDate !== undefined) updateFields.birth_date = editedPerson.birthDate;
         if (editedPerson.birthPlace !== undefined) updateFields.birth_place = editedPerson.birthPlace;
         if (editedPerson.deathDate !== undefined) updateFields.death_date = editedPerson.deathDate;
@@ -144,6 +144,8 @@ export default function PersonProfilePage() {
     }
 
     const genderLabel = person.gender === 1 ? 'Nam' : person.gender === 2 ? 'Nữ' : 'Không rõ';
+    const currentIsLiving = isEditing ? (editedPerson.isLiving ?? person.isLiving) : person.isLiving;
+    const statusLabel = currentIsLiving ? 'Còn sống' : 'Đã mất';
 
     return (
         <div className="space-y-6">
@@ -167,7 +169,7 @@ export default function PersonProfilePage() {
                             {genderLabel}
                             {person.generation ? ` • Đời thứ ${person.generation}` : ''}
                             {person.chi ? ` • Chi ${person.chi}` : ''}
-                            {person.isLiving && ' • Còn sống'}
+                            {` • ${statusLabel}`}
                         </p>
                     </div>
                 </div>
@@ -231,11 +233,16 @@ export default function PersonProfilePage() {
                             <EditableInfoRow label="Họ" value={isEditing ? (editedPerson.surname ?? person.surname ?? '') : (person.surname ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, surname: v }))} />
                             <EditableInfoRow label="Tên" value={isEditing ? (editedPerson.firstName ?? person.firstName ?? '') : (person.firstName ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, firstName: v }))} />
                             <InfoRow label="Giới tính" value={genderLabel} />
+                            <LivingStatusRow
+                                value={currentIsLiving}
+                                isEditing={isEditing}
+                                onChange={(value) => setEditedPerson((p) => ({ ...p, isLiving: value }))}
+                            />
                             <EditableInfoRow label="Tên thường gọi" value={isEditing ? (editedPerson.nickName ?? person.nickName ?? '') : (person.nickName ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, nickName: v }))} />
                             <EditableInfoRow label="Ngày sinh" value={isEditing ? (editedPerson.birthDate ?? person.birthDate ?? '') : (person.birthDate ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, birthDate: v }))} />
                             {person.birthYear && <InfoRow label="Năm âm lịch" value={zodiacYear(person.birthYear) || '—'} />}
                             <EditableInfoRow label="Nơi sinh" value={isEditing ? (editedPerson.birthPlace ?? person.birthPlace ?? '') : (person.birthPlace ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, birthPlace: v }))} />
-                            {!person.isLiving && (
+                            {!currentIsLiving && (
                                 <>
                                     <EditableInfoRow label="Ngày mất" value={isEditing ? (editedPerson.deathDate ?? person.deathDate ?? '') : (person.deathDate ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, deathDate: v }))} />
                                     <EditableInfoRow label="Nơi mất" value={isEditing ? (editedPerson.deathPlace ?? person.deathPlace ?? '') : (person.deathPlace ?? '')} isEditing={isEditing} onChange={(v) => setEditedPerson(p => ({ ...p, deathPlace: v }))} />
@@ -453,4 +460,36 @@ function EditableInfoRow({ label, value, isEditing, onChange }: { label: string;
         );
     }
     return <InfoRow label={label} value={value || '—'} />;
+}
+
+function LivingStatusRow({ value, isEditing, onChange }: { value: boolean; isEditing: boolean; onChange: (value: boolean) => void; }) {
+    if (isEditing) {
+        return (
+            <div>
+                <label className="text-xs font-medium text-muted-foreground">Tình trạng</label>
+                <div className="mt-1 flex gap-2">
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant={value ? 'default' : 'outline'}
+                        className="h-8"
+                        onClick={() => onChange(true)}
+                    >
+                        Còn sống
+                    </Button>
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant={!value ? 'default' : 'outline'}
+                        className="h-8"
+                        onClick={() => onChange(false)}
+                    >
+                        Đã mất
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    return <InfoRow label="Tình trạng" value={value ? 'Còn sống' : 'Đã mất'} />;
 }

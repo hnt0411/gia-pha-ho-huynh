@@ -6,6 +6,8 @@ import type { User, Session } from '@supabase/supabase-js';
 
 export type UserRole = 'admin' | 'member' | null;
 
+const ADMIN_EMAIL = 'huynhnhattien0411@gmail.com';
+
 interface Profile {
     id: string;
     email: string;
@@ -31,6 +33,10 @@ interface AuthState {
 }
 
 const AuthContext = createContext<AuthState | null>(null);
+
+function isAdminEmail(email?: string | null) {
+    return email?.toLowerCase() === ADMIN_EMAIL;
+}
 
 function formatAuthErrorMessage(error: unknown) {
     const message = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
@@ -73,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const fetchProfile = useCallback(async (userId: string) => {
+    const fetchProfile = useCallback(async (userId: string, userEmail?: string | null) => {
         try {
             const { data, error } = await supabase
                 .from('profiles')
@@ -81,7 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 .eq('id', userId)
                 .maybeSingle();
             if (!error && data) {
-                setProfile(data as Profile);
+                const nextProfile = data as Profile;
+                setProfile({
+                    ...nextProfile,
+                    role: isAdminEmail(userEmail ?? nextProfile.email) ? 'admin' : nextProfile.role,
+                });
             } else {
                 setProfile(null);
             }
@@ -92,10 +102,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const ensureProfile = useCallback(async (u: User) => {
         try {
+            const roleToAssign: UserRole = isAdminEmail(u.email) ? 'admin' : 'member';
+
             // Create profile if it doesn't exist (handles signup)
             const { data: existing } = await supabase
                 .from('profiles')
-                .select('id')
+                .select('id, role, email')
                 .eq('id', u.id)
                 .maybeSingle();
 
@@ -104,11 +116,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     id: u.id,
                     email: u.email || '',
                     display_name: u.user_metadata?.display_name || u.email?.split('@')[0] || '',
-                    role: 'member',
+                    role: roleToAssign,
                     status: 'active',
                 });
+            } else if (roleToAssign === 'admin' && (existing.role as string | undefined) !== 'admin') {
+                await supabase.from('profiles').update({ role: 'admin' }).eq('id', u.id);
             }
-            await fetchProfile(u.id);
+            await fetchProfile(u.id, u.email);
         } catch {
             setProfile(null);
         }
@@ -195,7 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (user) await fetchProfile(user.id);
     }, [user, fetchProfile]);
 
-    const role = profile?.role ?? null;
+    const role = isAdminEmail(user?.email) ? 'admin' : profile?.role ?? null;
 
     return (
         <AuthContext.Provider value={{
