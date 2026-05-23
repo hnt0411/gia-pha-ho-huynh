@@ -44,6 +44,10 @@ function formatAuthErrorMessage(error: unknown) {
         return 'Bạn vừa gửi quá nhiều email xác nhận trong thời gian ngắn. Hãy đợi vài phút rồi thử lại.';
     }
 
+    if (normalizedMessage.includes('error sending confirmation email')) {
+        return 'Supabase hiện không gửi được email xác nhận. Hãy kiểm tra cấu hình SMTP, mẫu email và địa chỉ gửi trong Supabase.';
+    }
+
     if (
         message.includes('Failed to fetch')
         || message.includes('Load failed')
