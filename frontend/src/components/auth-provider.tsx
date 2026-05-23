@@ -32,6 +32,37 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
+function formatAuthErrorMessage(error: unknown) {
+    const message = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+    const normalizedMessage = message.toLowerCase();
+
+    if (message.includes('Invalid login credentials')) {
+        return 'Email hoặc mật khẩu không đúng';
+    }
+
+    if (normalizedMessage.includes('email rate limit exceeded')) {
+        return 'Bạn vừa gửi quá nhiều email xác nhận trong thời gian ngắn. Hãy đợi vài phút rồi thử lại.';
+    }
+
+    if (
+        message.includes('Failed to fetch')
+        || message.includes('Load failed')
+        || message.includes('NetworkError')
+    ) {
+        return 'Khong the ket noi toi Supabase. Kiem tra lai project Supabase, domain API, va bien moi truong tren Vercel.';
+    }
+
+    return message || 'Da xay ra loi khi ket noi he thong.';
+}
+
+function getEmailRedirectUrl() {
+    if (typeof window === 'undefined') {
+        return undefined;
+    }
+
+    return `${window.location.origin}/login`;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
@@ -56,32 +87,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const ensureProfile = useCallback(async (u: User) => {
-        // Create profile if it doesn't exist (handles signup)
-        const { data: existing } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', u.id)
-            .maybeSingle();
+        try {
+            // Create profile if it doesn't exist (handles signup)
+            const { data: existing } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('id', u.id)
+                .maybeSingle();
 
-        if (!existing) {
-            await supabase.from('profiles').insert({
-                id: u.id,
-                email: u.email || '',
-                display_name: u.user_metadata?.display_name || u.email?.split('@')[0] || '',
-                role: 'member',
-                status: 'active',
-            });
+            if (!existing) {
+                await supabase.from('profiles').insert({
+                    id: u.id,
+                    email: u.email || '',
+                    display_name: u.user_metadata?.display_name || u.email?.split('@')[0] || '',
+                    role: 'member',
+                    status: 'active',
+                });
+            }
+            await fetchProfile(u.id);
+        } catch {
+            setProfile(null);
         }
-        await fetchProfile(u.id);
     }, [fetchProfile]);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session: s } }) => {
-            setSession(s);
-            setUser(s?.user ?? null);
-            if (s?.user) ensureProfile(s.user);
-            setLoading(false);
-        });
+        supabase.auth.getSession()
+            .then(({ data: { session: s } }) => {
+                setSession(s);
+                setUser(s?.user ?? null);
+                if (s?.user) ensureProfile(s.user);
+            })
+            .catch(() => {
+                setSession(null);
+                setUser(null);
+                setProfile(null);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
             setSession(s);
@@ -97,35 +140,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, [ensureProfile]);
 
     const signIn = useCallback(async (email: string, password: string) => {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-            if (error.message.includes('Invalid login credentials')) {
-                return { error: 'Email hoặc mật khẩu không đúng' };
+        try {
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                return { error: formatAuthErrorMessage(error) };
             }
-            return { error: error.message };
+
+            return {};
+        } catch (error) {
+            return { error: formatAuthErrorMessage(error) };
         }
-        return {};
     }, []);
 
     const signUp = useCallback(async (email: string, password: string, displayName?: string) => {
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: { display_name: displayName || email.split('@')[0] },
-            },
-        });
-        if (error) {
-            if (error.message.includes('already registered')) {
-                return { error: 'Email đã được đăng ký. Hãy đăng nhập.' };
+        try {
+            const emailRedirectTo = getEmailRedirectUrl();
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: { display_name: displayName || email.split('@')[0] },
+                    emailRedirectTo,
+                },
+            });
+            if (error) {
+                if (error.message.includes('already registered')) {
+                    return { error: 'Email da duoc dang ky. Hay dang nhap.' };
+                }
+
+                return { error: formatAuthErrorMessage(error) };
             }
-            return { error: error.message };
+
+            // If email confirmation is required
+            if (data.user && !data.session) {
+                return { error: 'Da dang ky! Kiem tra email de xac nhan tai khoan.' };
+            }
+
+            return {};
+        } catch (error) {
+            return { error: formatAuthErrorMessage(error) };
         }
-        // If email confirmation is required
-        if (data.user && !data.session) {
-            return { error: 'Đã đăng ký! Kiểm tra email để xác nhận tài khoản.' };
-        }
-        return {};
     }, []);
 
     const signOut = useCallback(async () => {
