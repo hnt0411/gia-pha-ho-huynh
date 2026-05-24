@@ -64,10 +64,11 @@ function genTitle(gen: number): string {
 }
 
 function formatYears(birth?: number, death?: number, isLiving?: boolean): string {
-    if (!birth) return '—';
-    if (death) return `${birth} – ${death}`;
-    if (isLiving) return `${birth} – nay`;
-    return `${birth}`;
+    if (birth && death) return `${birth} – ${death}`;
+    if (birth && isLiving) return `${birth} – nay`;
+    if (birth) return `${birth} – mất`;
+    if (death) return `Mất ${death}`;
+    return isLiving === false ? 'Đã mất' : '—';
 }
 
 function normalizeGeneration(gen: number | undefined, offset: number): number {
