@@ -84,15 +84,6 @@ function computeBranchSummary(
         for (const fId of person.families) {
             const fam = familyMap.get(fId);
             if (!fam) continue;
-            // Also count spouse
-            if (fam.motherHandle && fam.motherHandle !== handle && !visited.has(fam.motherHandle)) {
-                const spouse = personMap.get(fam.motherHandle);
-                if (spouse) { visited.add(fam.motherHandle); if (spouse.isLiving) livingCount++; else deceasedCount++; }
-            }
-            if (fam.fatherHandle && fam.fatherHandle !== handle && !visited.has(fam.fatherHandle)) {
-                const spouse = personMap.get(fam.fatherHandle);
-                if (spouse) { visited.add(fam.fatherHandle); if (spouse.isLiving) livingCount++; else deceasedCount++; }
-            }
             for (const ch of fam.children) walk(ch, 1);
         }
     }
@@ -335,9 +326,6 @@ export default function TreeViewPage() {
             for (const fId of person.families) {
                 const fam = familyMap.get(fId);
                 if (!fam) continue;
-                // Include spouse
-                if (fam.motherHandle && fam.motherHandle !== h) result.add(fam.motherHandle);
-                if (fam.fatherHandle && fam.fatherHandle !== h) result.add(fam.fatherHandle);
                 for (const ch of fam.children) {
                     result.add(ch);
                     walk(ch);
