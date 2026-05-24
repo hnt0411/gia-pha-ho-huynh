@@ -169,6 +169,7 @@ export default function TreeViewPage() {
     const searchParams = useSearchParams();
     const containerRef = useRef<HTMLDivElement>(null);
     const viewportRef = useRef<HTMLDivElement>(null);
+    const lastAutoFitKeyRef = useRef<string | null>(null);
 
     const [treeData, setTreeData] = useState<{ people: TreeNode[]; families: TreeFamily[] } | null>(null);
     const [loading, setLoading] = useState(true);
@@ -654,10 +655,20 @@ export default function TreeViewPage() {
         });
     }, [getFitScale, layout]);
 
-    // Auto-fit on first load
+    // Auto-fit only on initial load or when the tree context changes.
+    // Collapsing/expanding branches should preserve the current zoom level.
     useEffect(() => {
-        if (layout && !loading) setTimeout(fitAll, 50);
-    }, [layout, loading]);
+        if (!layout || loading) return;
+
+        const autoFitKey = `${viewMode}:${focusPerson ?? ''}:${treeData ? 'ready' : 'empty'}`;
+        if (lastAutoFitKeyRef.current === autoFitKey) {
+            return;
+        }
+
+        lastAutoFitKeyRef.current = autoFitKey;
+        const timeoutId = window.setTimeout(fitAll, 50);
+        return () => window.clearTimeout(timeoutId);
+    }, [fitAll, focusPerson, layout, loading, treeData, viewMode]);
 
     // === Mouse handlers ===
     const handleMouseDown = (e: React.MouseEvent) => {
