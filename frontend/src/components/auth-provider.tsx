@@ -81,10 +81,10 @@ function formatAuthErrorMessage(error: unknown) {
         || message.includes('Load failed')
         || message.includes('NetworkError')
     ) {
-        return 'Khong the ket noi toi Supabase. Kiem tra lai project Supabase, domain API, va bien moi truong tren Vercel.';
+        return 'Không thể kết nối tới Supabase. Kiểm tra lại project Supabase, domain API, và biến môi trường trên Vercel.';
     }
 
-    return message || 'Da xay ra loi khi ket noi he thong.';
+    return message || 'Đã xảy ra lỗi khi kết nối hệ thống.';
 }
 
 function getAuthRedirectUrl(path: string) {
@@ -205,7 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
             if (error) {
                 if (error.message.includes('already registered')) {
-                    return { error: 'Email da duoc dang ky. Hay dang nhap.' };
+                    return { error: 'Email đã được đăng ký. Hãy đăng nhập.' };
                 }
 
                 return { error: formatAuthErrorMessage(error) };
@@ -215,7 +215,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (data.user && !data.session) {
                 return {
                     requiresOtp: true,
-                    message: 'Ma OTP xac nhan dang ky da duoc gui vao email. Hay nhap ma de kich hoat tai khoan.',
+                    message: 'Mã OTP xác nhận đăng ký đã được gửi vào email. Hãy nhập mã để kích hoạt tài khoản.',
                 };
             }
 
@@ -257,7 +257,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
 
             return {
-                message: 'Da gui lai ma OTP dang ky. Hay kiem tra inbox va ca thu rac.',
+                message: 'Đã gửi lại mã OTP đăng ký. Hãy kiểm tra inbox và cả thư rác.',
             };
         } catch (error) {
             return { error: formatAuthErrorMessage(error) };
@@ -275,7 +275,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             return {
                 message:
-                    'Neu email ton tai trong he thong va nha cung cap mail cho phep gui, ban se nhan duoc ma OTP dat lai mat khau. Hay kiem tra inbox va ca thu rac.',
+                    'Nếu email tồn tại trong hệ thống và nhà cung cấp mail cho phép gửi, bạn sẽ nhận được mã OTP đặt lại mật khẩu. Hãy kiểm tra inbox và cả thư rác.',
             };
         } catch (error) {
             return { error: formatAuthErrorMessage(error) };

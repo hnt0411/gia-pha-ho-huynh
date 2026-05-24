@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/components/auth-provider';
 
+const OTP_MAX_LENGTH = 6;
+
 const loginSchema = z.object({
     email: z.string().email('Email không hợp lệ'),
     password: z.string().min(6, 'Mật khẩu tối thiểu 6 ký tự'),
@@ -67,7 +69,7 @@ export default function LoginPage() {
                         displayName: data.displayName,
                     });
                     setOtpCode('');
-                    setSuccess(result.message || 'Ma OTP xac nhan dang ky da duoc gui vao email.');
+                    setSuccess(result.message || 'Mã OTP xác nhận đăng ký đã được gửi vào email.');
                 } else {
                     router.push('/tree');
                 }
@@ -89,12 +91,12 @@ export default function LoginPage() {
         clearMessages();
 
         if (!pendingSignup) {
-            setError('Khong tim thay phien dang ky dang cho xac nhan.');
+            setError('Không tìm thấy phiên đăng ký đang chờ xác nhận.');
             return;
         }
 
         if (otpCode.trim().length < 6) {
-            setError('Hay nhap ma OTP gom 6 chu so.');
+            setError('Hãy nhập đầy đủ mã OTP trong email.');
             return;
         }
 
@@ -106,7 +108,7 @@ export default function LoginPage() {
                 return;
             }
 
-            setSuccess('Xac nhan email thanh cong. Dang chuyen vao he thong...');
+            setSuccess('Xác nhận email thành công. Đang chuyển vào hệ thống...');
             router.push('/tree');
         } finally {
             setLoading(false);
@@ -127,7 +129,7 @@ export default function LoginPage() {
                 return;
             }
 
-            setSuccess(result.message || 'Da gui lai ma OTP dang ky.');
+            setSuccess(result.message || 'Đã gửi lại mã OTP đăng ký.');
         } finally {
             setLoading(false);
         }
@@ -153,7 +155,7 @@ export default function LoginPage() {
                 <CardTitle className="text-2xl font-bold" style={{ color: textColor }}>Gia phả họ Huỳnh</CardTitle>
                 <CardDescription style={{ color: mutedColor }}>
                     {showRegisterOtpStep
-                        ? 'Nhap ma OTP vua duoc gui vao email de kich hoat tai khoan'
+                        ? 'Nhập mã OTP vừa được gửi vào email để kích hoạt tài khoản'
                         : mode === 'login'
                         ? 'Đăng nhập để quản lý & đóng góp thông tin'
                         : 'Đăng ký tài khoản thành viên dòng họ'
@@ -165,7 +167,14 @@ export default function LoginPage() {
                     <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
                 )}
                 {success && (
-                    <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-400">
+                    <div
+                        className="mb-4 rounded-md border p-3 text-sm font-medium shadow-sm"
+                        style={{
+                            backgroundColor: isDark ? 'rgba(20, 83, 45, 0.28)' : '#ecfdf3',
+                            borderColor: isDark ? '#166534' : '#86efac',
+                            color: isDark ? '#dcfce7' : '#166534',
+                        }}
+                    >
                         {success}
                     </div>
                 )}
@@ -174,10 +183,10 @@ export default function LoginPage() {
                     <form onSubmit={handleVerifySignupOtp} className="space-y-4">
                         <div className="rounded-md border border-border/70 bg-muted/20 p-3 text-sm" style={{ color: mutedColor }}>
                             <div className="font-medium" style={{ color: textColor }}>
-                                Email xac nhan: {pendingSignup.email}
+                                Email xác nhận: {pendingSignup.email}
                             </div>
                             <div className="mt-1">
-                                {pendingSignup.displayName ? `Tai khoan ${pendingSignup.displayName} dang cho kich hoat.` : 'Tai khoan dang cho kich hoat.'}
+                                {pendingSignup.displayName ? `Tài khoản ${pendingSignup.displayName} đang chờ kích hoạt.` : 'Tài khoản đang chờ kích hoạt.'}
                             </div>
                         </div>
 
@@ -188,9 +197,9 @@ export default function LoginPage() {
                             <Input
                                 id="signupOtp"
                                 inputMode="numeric"
-                                placeholder="Nhập 6 chữ số"
+                                placeholder="Nhập mã OTP từ email"
                                 value={otpCode}
-                                onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
+                                onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, '').slice(0, OTP_MAX_LENGTH))}
                                 className="text-center text-lg tracking-[0.35em] placeholder:tracking-normal placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                 style={inputStyle}
                             />

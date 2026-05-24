@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/components/auth-provider';
 
+const OTP_MAX_LENGTH = 6;
+
 const forgotPasswordSchema = z.object({
     email: z.string().email('Email không hợp lệ'),
     otp: z.string().optional(),
@@ -72,17 +74,17 @@ export default function ForgotPasswordPage() {
             const confirmPassword = data.confirmPassword || '';
 
             if (otp.length < 6) {
-                setError('Hay nhap ma OTP gom 6 chu so.');
+                setError('Hãy nhập đầy đủ mã OTP trong email.');
                 return;
             }
 
             if (password.length < 8) {
-                setError('Mat khau moi toi thieu 8 ky tu.');
+                setError('Mật khẩu mới tối thiểu 8 ký tự.');
                 return;
             }
 
             if (password !== confirmPassword) {
-                setError('Mat khau xac nhan khong khop.');
+                setError('Mật khẩu xác nhận không khớp.');
                 return;
             }
 
@@ -92,7 +94,7 @@ export default function ForgotPasswordPage() {
                 return;
             }
 
-            setSuccess('Dat lai mat khau thanh cong. Ban se duoc chuyen ve man dang nhap.');
+            setSuccess('Đặt lại mật khẩu thành công. Bạn sẽ được chuyển về màn đăng nhập.');
             setTimeout(() => {
                 router.push('/login');
             }, 1200);
@@ -112,8 +114,8 @@ export default function ForgotPasswordPage() {
                 <CardTitle className="text-2xl font-bold" style={{ color: textColor }}>Quên mật khẩu</CardTitle>
                 <CardDescription style={{ color: mutedColor }}>
                     {otpRequested
-                        ? 'Nhap ma OTP trong email va mat khau moi de hoan tat viec dat lai mat khau.'
-                        : 'Nhap email tai khoan. He thong se thu gui ma OTP dat lai mat khau qua Supabase.'}
+                        ? 'Nhập mã OTP trong email và mật khẩu mới để hoàn tất việc đặt lại mật khẩu.'
+                        : 'Nhập email tài khoản. Hệ thống sẽ thử gửi mã OTP đặt lại mật khẩu qua Supabase.'}
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -125,9 +127,9 @@ export default function ForgotPasswordPage() {
                         <div
                             className="rounded-md border p-3 text-sm font-medium shadow-sm"
                             style={{
-                                backgroundColor: isDark ? 'rgba(6, 78, 59, 0.28)' : '#dcfce7',
-                                borderColor: isDark ? '#065f46' : '#86efac',
-                                color: isDark ? '#bbf7d0' : '#14532d',
+                                backgroundColor: isDark ? 'rgba(20, 83, 45, 0.28)' : '#ecfdf3',
+                                borderColor: isDark ? '#166534' : '#86efac',
+                                color: isDark ? '#dcfce7' : '#166534',
                             }}
                         >
                             {success}
@@ -141,7 +143,7 @@ export default function ForgotPasswordPage() {
                             color: isDark ? '#fde68a' : '#92400e',
                         }}
                     >
-                        Neu ban khong nhan duoc ma OTP, hay kiem tra thu rac va xem lai `Auth Logs` trong Supabase. Mail mac dinh cua Supabase co the bi gioi han tan suat gui.
+                        Nếu bạn không nhận được mã OTP, hãy kiểm tra thư rác và xem lại `Auth Logs` trong Supabase. Mail mặc định của Supabase có thể bị giới hạn tần suất gửi.
                     </div>
 
                     <div className="space-y-2">
@@ -165,8 +167,12 @@ export default function ForgotPasswordPage() {
                                 <Input
                                     id="otp"
                                     inputMode="numeric"
-                                    placeholder="Nhập 6 chữ số"
-                                    {...register('otp')}
+                                    placeholder="Nhập mã OTP từ email"
+                                    {...register('otp', {
+                                        onChange: (event) => {
+                                            event.target.value = event.target.value.replace(/\D/g, '').slice(0, OTP_MAX_LENGTH);
+                                        },
+                                    })}
                                     className="text-center text-lg tracking-[0.35em] placeholder:tracking-normal placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                     style={inputStyle}
                                 />
@@ -229,7 +235,7 @@ export default function ForgotPasswordPage() {
                             }}
                             onClick={async () => {
                                 if (!emailValue) {
-                                    setError('Khong tim thay email de gui lai ma OTP.');
+                                    setError('Không tìm thấy email để gửi lại mã OTP.');
                                     return;
                                 }
 
