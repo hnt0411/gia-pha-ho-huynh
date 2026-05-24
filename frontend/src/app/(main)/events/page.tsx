@@ -98,7 +98,7 @@ function CreateEventDialog({ onCreated }: { onCreated: () => void }) {
             <DialogTrigger asChild>
                 <Button><Plus className="mr-2 h-4 w-4" />Tạo sự kiện</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-xl rounded-2xl">
                 <DialogHeader><DialogTitle>Tạo sự kiện mới</DialogTitle></DialogHeader>
                 <div className="space-y-4 mt-4">
                     <Input placeholder="Tên sự kiện *" value={title} onChange={e => setTitle(e.target.value)} />
@@ -125,7 +125,7 @@ function EventCard({ event }: { event: EventItem }) {
     const TypeIcon = tl.icon;
 
     return (
-        <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push(`/events/${event.id}`)}>
+        <Card className="cursor-pointer rounded-2xl border-border/70 bg-card/88 transition-all hover:-translate-y-0.5 hover:shadow-lg" onClick={() => router.push(`/events/${event.id}`)}>
             <CardContent className="p-4 space-y-2">
                 <div className="flex items-start justify-between">
                     <div>
@@ -170,15 +170,26 @@ export default function EventsPage() {
 
     return (
         <div className="space-y-6">
+            <section className="rounded-3xl border border-border/70 bg-card/80 p-6 shadow-sm backdrop-blur sm:p-7">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+                            <CalendarDays className="h-6 w-6" />
+                            Sự kiện
+                        </h1>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                            Lịch các hoạt động dòng họ, ngày giỗ, họp họ và các dịp gặp mặt.
+                        </p>
+                    </div>
+                    {isLoggedIn && <CreateEventDialog onCreated={fetchEvents} />}
+                </div>
+            </section>
+
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                        <CalendarDays className="h-6 w-6" />
-                        Sự kiện
-                    </h1>
-                    <p className="text-muted-foreground">Lịch các hoạt động dòng họ</p>
+                    <h2 className="text-lg font-semibold tracking-tight">Danh sách sự kiện</h2>
+                    <p className="text-sm text-muted-foreground">{events.length} mục đã ghi nhận</p>
                 </div>
-                {isLoggedIn && <CreateEventDialog onCreated={fetchEvents} />}
             </div>
 
             {loading ? (
@@ -186,7 +197,7 @@ export default function EventsPage() {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
                 </div>
             ) : events.length === 0 ? (
-                <Card>
+                <Card className="rounded-3xl border-border/70 bg-card/85 shadow-sm">
                     <CardContent className="flex flex-col items-center justify-center py-12">
                         <CalendarDays className="h-12 w-12 text-muted-foreground mb-4" />
                         <p className="text-muted-foreground">Chưa có sự kiện nào</p>

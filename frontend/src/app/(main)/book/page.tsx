@@ -61,12 +61,12 @@ export default function BookPage() {
     const { resolvedTheme } = useTheme();
     const isDark = resolvedTheme === 'dark';
     const toolbarColors = {
-        bg: isDark ? 'rgba(15, 23, 42, 0.9)' : '#ffffff',
+        bg: isDark ? 'rgba(15, 23, 42, 0.82)' : 'rgba(255, 255, 255, 0.92)',
         text: isDark ? '#f8fafc' : '#0f172a',
         muted: isDark ? '#cbd5e1' : '#475569',
-        border: isDark ? '#1f2937' : '#e2e8f0',
-        panel: isDark ? '#0f172a' : '#ffffff',
-        strip: isDark ? '#0b1220' : '#f8fafc',
+        border: isDark ? '#334155' : '#dbe3ee',
+        panel: isDark ? '#111827' : '#ffffff',
+        strip: isDark ? '#0f172a' : '#f8fafc',
     };
 
     // Auto-scroll to top when entering preview mode
@@ -241,14 +241,14 @@ export default function BookPage() {
         <div className="min-w-0 w-full overflow-hidden">
             {/* ═══ TOOLBAR ═══ */}
             <div
-                className="no-print sticky top-0 z-50 backdrop-blur-lg border-b shadow-sm"
+                className="no-print sticky top-0 z-40 mb-6 rounded-2xl border shadow-sm backdrop-blur-lg"
                 style={{
                     backgroundColor: toolbarColors.bg,
                     color: toolbarColors.text,
                     borderColor: toolbarColors.border,
                 }}
             >
-                <div className="px-4 py-2.5 flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3 px-4 py-3">
                     <div className="flex items-center gap-2">
                         <Link href="/tree">
                             <Button
@@ -353,7 +353,7 @@ export default function BookPage() {
                 {/* Preview quick-nav strip */}
                 {previewMode && (
                     <div
-                        className="border-t px-4 py-2 overflow-hidden"
+                        className="overflow-hidden border-t px-4 py-2.5"
                         style={{ backgroundColor: toolbarColors.strip, borderColor: toolbarColors.border }}
                     >
                         <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin" style={{ maxWidth: '100%' }}>
@@ -377,7 +377,8 @@ export default function BookPage() {
 
             {/* ═══ PRINT PREVIEW GALLERY ═══ */}
             {previewMode && (
-                <div className="no-print bg-slate-100 min-h-screen p-6">
+                <div className={`no-print min-h-screen rounded-[28px] border p-6 ${isDark ? 'bg-slate-950/40' : 'bg-slate-100/90'}`}
+                    style={{ borderColor: toolbarColors.border }}>
                     <div ref={pagesRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
                         {sections.map(s => (
                             <div key={s.id} id={`preview-${s.id}`} className="relative">
@@ -409,7 +410,7 @@ export default function BookPage() {
 
             {/* ═══ NORMAL READING MODE ═══ */}
             {!previewMode && (
-                <div className="book-content max-w-[210mm] mx-auto bg-white"
+                <div className="book-content mx-auto max-w-[210mm] rounded-[24px] bg-white px-0 pt-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)]"
                     style={{ fontFamily: "'Noto Serif', Georgia, serif", color: t.text }}>
                     {sections.map((section, index) => (
                         <section
@@ -445,7 +446,7 @@ export default function BookPage() {
                 @media print {
                     body { margin: 0; padding: 0; }
                     .no-print { display: none !important; }
-                    .book-content { max-width: none; }
+                    .book-content { max-width: none; box-shadow: none; border-radius: 0; padding-top: 0; }
                     @page {
                         size: A4;
                         margin: 20mm 18mm 25mm 18mm;
@@ -459,9 +460,9 @@ export default function BookPage() {
                 }
 
                 @media screen {
-                    .page-break { border-top: 2px dashed ${t.borderLight}; position: relative; }
+                    .page-break { border-top: 2px dashed ${t.borderLight}; position: relative; margin-top: 24px; padding-top: 24px; }
                     .page-label {
-                        position: absolute; top: -10px; left: 50%;
+                        position: absolute; top: 6px; left: 50%;
                         transform: translateX(-50%);
                         background: white; padding: 0 12px;
                         font-size: 11px; color: ${t.primary};

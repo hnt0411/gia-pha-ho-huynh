@@ -25,11 +25,15 @@ export default function MainLayout({ children }: { children: ReactNode }) {
     }
 
     return (
-        <div className="min-h-screen flex bg-background text-foreground">
+        <div className="flex min-h-screen bg-background text-foreground">
             <Sidebar />
-            <div className="flex-1 flex flex-col">
+            <div className="flex min-w-0 flex-1 flex-col">
                 <Header />
-                <main className="flex-1 p-6">{children}</main>
+                <main className="flex-1 overflow-x-hidden overflow-y-auto">
+                    <div className="mx-auto w-full max-w-[1680px] px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-6">
+                        {children}
+                    </div>
+                </main>
             </div>
         </div>
     );

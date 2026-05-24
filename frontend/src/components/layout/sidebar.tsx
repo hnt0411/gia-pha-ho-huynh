@@ -49,28 +49,28 @@ export function Sidebar() {
     return (
         <aside
             className={cn(
-                'flex flex-col border-r bg-card transition-all duration-300 h-screen sticky top-0',
+                'sticky top-0 flex h-screen flex-col border-r border-border/80 bg-card/95 shadow-[1px_0_0_rgba(148,163,184,0.08)] backdrop-blur transition-all duration-300',
                 collapsed ? 'w-16' : 'w-64',
             )}
         >
             {/* Logo */}
-            <div className="flex items-center gap-2 px-4 py-4 border-b">
+            <div className="flex items-center gap-2 border-b border-border/80 px-4 py-4">
                 <TreePine className="h-6 w-6 text-primary shrink-0" />
                 {!collapsed && <span className="font-bold text-lg">Gia phả họ Huỳnh</span>}
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+            <nav className="flex-1 space-y-1.5 overflow-y-auto px-2.5 py-4">
                 {navItems.map((item) => {
                     const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
                     return (
                         <Link key={item.href} href={item.href}>
                             <span
                                 className={cn(
-                                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                                    'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all',
                                     isActive
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                                        ? 'bg-primary text-primary-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:bg-accent/80 hover:text-accent-foreground',
                                 )}
                             >
                                 <item.icon className="h-4 w-4 shrink-0" />
@@ -97,10 +97,10 @@ export function Sidebar() {
                                 <Link key={item.href} href={item.href}>
                                     <span
                                         className={cn(
-                                            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                                            'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all',
                                             isActive
-                                                ? 'bg-primary text-primary-foreground'
-                                                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                                : 'text-muted-foreground hover:bg-accent/80 hover:text-accent-foreground',
                                         )}
                                     >
                                         <item.icon className="h-4 w-4 shrink-0" />
@@ -116,8 +116,8 @@ export function Sidebar() {
 
 
             {/* Collapse toggle */}
-            <div className="border-t p-2">
-                <Button variant="ghost" size="sm" className="w-full" onClick={() => setCollapsed(!collapsed)}>
+            <div className="border-t border-border/80 p-2.5">
+                <Button variant="ghost" size="sm" className="w-full justify-start rounded-xl" onClick={() => setCollapsed(!collapsed)}>
                     {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
                     {!collapsed && <span className="ml-2">Thu gọn</span>}
                 </Button>

@@ -42,7 +42,7 @@ export function Header() {
     };
 
     return (
-        <header className="sticky top-0 z-[1000] flex h-14 items-center justify-between border-b bg-card/80 backdrop-blur-sm px-4 lg:px-6">
+        <header className="sticky top-0 z-[1000] flex h-14 items-center justify-between border-b border-border/80 bg-background/88 px-4 shadow-[0_1px_0_rgba(148,163,184,0.08)] backdrop-blur-xl lg:px-6">
             {/* Left side */}
             <div className="flex items-center gap-2">
                 <h2 className="text-sm font-medium text-muted-foreground">
@@ -70,8 +70,8 @@ export function Header() {
                     /* User menu (logged in) */
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                                <Avatar className="h-8 w-8 border border-border bg-background">
+                            <Button variant="ghost" className="relative h-9 w-9 rounded-full border border-transparent hover:border-border/80">
+                                <Avatar className="h-8 w-8 border border-border/80 bg-background">
                                     <AvatarFallback className="bg-primary/10 text-primary text-xs">
                                         {initials}
                                     </AvatarFallback>

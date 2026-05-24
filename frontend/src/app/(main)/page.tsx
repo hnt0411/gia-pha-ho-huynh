@@ -56,16 +56,19 @@ export default function HomePage() {
     ];
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight">Trang chủ</h1>
-                <p className="text-muted-foreground">Chào mừng đến với Gia phả dòng họ Huỳnh</p>
-            </div>
+        <div className="space-y-8">
+            <section className="rounded-3xl border border-border/70 bg-card/80 p-6 shadow-sm backdrop-blur sm:p-7">
+                <h1 className="text-3xl font-bold tracking-tight">Trang chủ</h1>
+                <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
+                    Chào mừng đến với Gia phả dòng họ Huỳnh. Bạn có thể xem nhanh số liệu, đi tới cây gia phả,
+                    bảng tin, sự kiện và sách gia phả ngay từ đây.
+                </p>
+            </section>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid auto-rows-fr gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {cards.map(c => (
-                    <Link key={c.title} href={c.href}>
-                        <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                    <Link key={c.title} href={c.href} className="block h-full">
+                        <Card className="h-full cursor-pointer rounded-2xl border-border/70 bg-card/88 transition-all hover:-translate-y-0.5 hover:shadow-lg">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">{c.title}</CardTitle>
                                 <c.icon className="h-4 w-4 text-muted-foreground" />
@@ -79,16 +82,16 @@ export default function HomePage() {
                 ))}
             </div>
 
-            <Card>
-                <CardHeader>
+            <Card className="rounded-3xl border-border/70 bg-card/85 shadow-sm">
+                <CardHeader className="pb-4">
                     <CardTitle>Bắt đầu nhanh</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                    <div className="flex flex-wrap gap-2">
-                        <Link href="/tree"><Button variant="outline"><TreePine className="mr-2 h-4 w-4" />Xem cây gia phả</Button></Link>
-                        <Link href="/feed"><Button variant="outline"><Newspaper className="mr-2 h-4 w-4" />Bảng tin</Button></Link>
-                        <Link href="/events"><Button variant="outline"><CalendarDays className="mr-2 h-4 w-4" />Sự kiện</Button></Link>
-                        <Link href="/book"><Button variant="outline"><BookOpen className="mr-2 h-4 w-4" />Sách gia phả</Button></Link>
+                <CardContent>
+                    <div className="flex flex-wrap gap-3">
+                        <Link href="/tree"><Button variant="outline" className="rounded-xl"><TreePine className="mr-2 h-4 w-4" />Xem cây gia phả</Button></Link>
+                        <Link href="/feed"><Button variant="outline" className="rounded-xl"><Newspaper className="mr-2 h-4 w-4" />Bảng tin</Button></Link>
+                        <Link href="/events"><Button variant="outline" className="rounded-xl"><CalendarDays className="mr-2 h-4 w-4" />Sự kiện</Button></Link>
+                        <Link href="/book"><Button variant="outline" className="rounded-xl"><BookOpen className="mr-2 h-4 w-4" />Sách gia phả</Button></Link>
                     </div>
                 </CardContent>
             </Card>

@@ -20,7 +20,7 @@ import {
 import {
     computeLayout, filterAncestors, filterDescendants,
     CARD_W, CARD_H,
-    type TreeNode, type TreeFamily, type LayoutResult, type PositionedNode, type PositionedCouple, type Connection,
+    type TreeNode, type TreeFamily, type LayoutResult, type PositionedNode, type PositionedCouple,
 } from '@/lib/tree-layout';
 import { getMockTreeData } from '@/lib/mock-data';
 
@@ -167,7 +167,6 @@ function computePersonGenerations(people: TreeNode[], families: TreeFamily[]): M
 export default function TreeViewPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const containerRef = useRef<HTMLDivElement>(null);
     const viewportRef = useRef<HTMLDivElement>(null);
     const lastAutoFitKeyRef = useRef<string | null>(null);
 
@@ -507,7 +506,7 @@ export default function TreeViewPage() {
             const motherHidden = f.motherHandle ? hiddenHandles.has(f.motherHandle) : true;
             return !(fatherHidden && motherHidden);
         });
-        const normalizedPeople = visiblePeople.map(p => ({
+        const normalizedPeople = visiblePeople.map((p: TreeNode) => ({
             ...p,
             originalGeneration: p.generation,
             generation: p.generation - generationOffset,
@@ -811,9 +810,9 @@ export default function TreeViewPage() {
     // connPath kept for compatibility but unused with batched rendering
 
     return (
-        <div className="flex flex-col h-[calc(100vh-80px)]">
+        <div className="flex h-[calc(100vh-96px)] flex-col gap-3">
             {/* Header */}
-            <div className="flex items-center justify-between flex-wrap gap-2 px-1 pb-2">
+            <div className="flex flex-wrap items-start justify-between gap-3 rounded-3xl border border-border/70 bg-card/80 px-4 py-4 shadow-sm backdrop-blur">
                 <div>
                     <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
                         <TreePine className="h-5 w-5" /> Cây gia phả
@@ -830,10 +829,10 @@ export default function TreeViewPage() {
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">
                     {/* View modes */}
-                    <div className="flex rounded-lg border overflow-hidden text-xs">
+                    <div className="flex overflow-hidden rounded-xl border border-border/70 bg-background/70 text-xs">
                         {([['full', 'Toàn cảnh', Eye], ['ancestor', 'Tổ tiên', Users], ['descendant', 'Hậu duệ', GitBranch]] as const).map(([mode, label, Icon]) => (
                             <button key={mode} onClick={() => changeViewMode(mode)}
-                                className={`px-2.5 py-1.5 font-medium flex items-center gap-1 transition-colors ${mode !== 'full' ? 'border-l' : ''} ${viewMode === mode ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}>
+                                className={`flex items-center gap-1 px-2.5 py-1.5 font-medium transition-colors ${mode !== 'full' ? 'border-l border-border/70' : ''} ${viewMode === mode ? 'bg-primary text-primary-foreground' : 'hover:bg-muted/80'}`}>
                                 <Icon className="h-3.5 w-3.5" /> {label}
                             </button>
                         ))}
@@ -871,28 +870,28 @@ export default function TreeViewPage() {
                     </div>
                     {/* Controls */}
                     <div className="flex gap-0.5">
-                        <Button variant="outline" size="icon" className="h-8 w-8" title="Thu gọn tất cả" onClick={collapseAll}><ChevronsDownUp className="h-3.5 w-3.5" /></Button>
-                        <Button variant="outline" size="icon" className="h-8 w-8" title="Mở rộng tất cả" onClick={expandAll}><ChevronsUpDown className="h-3.5 w-3.5" /></Button>
+                        <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl" title="Thu gọn tất cả" onClick={collapseAll}><ChevronsDownUp className="h-3.5 w-3.5" /></Button>
+                        <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl" title="Mở rộng tất cả" onClick={expandAll}><ChevronsUpDown className="h-3.5 w-3.5" /></Button>
                         <div className="w-px bg-border mx-0.5" />
-                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setTransform(t => {
+                        <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl" onClick={() => setTransform(t => {
                             const vw = viewportRef.current?.clientWidth ?? 0; const vh = viewportRef.current?.clientHeight ?? 0;
                             const cx = vw / 2; const cy = vh / 2;
                             const ns = clampScale(t.scale * BUTTON_ZOOM_STEP); const r = ns / t.scale;
                             return { scale: ns, x: cx - (cx - t.x) * r, y: cy - (cy - t.y) * r };
                         })}><ZoomIn className="h-3.5 w-3.5" /></Button>
-                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setTransform(t => {
+                        <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl" onClick={() => setTransform(t => {
                             const vw = viewportRef.current?.clientWidth ?? 0; const vh = viewportRef.current?.clientHeight ?? 0;
                             const cx = vw / 2; const cy = vh / 2;
                             const ns = clampScale(t.scale / BUTTON_ZOOM_STEP); const r = ns / t.scale;
                             return { scale: ns, x: cx - (cx - t.x) * r, y: cy - (cy - t.y) * r };
                         })}><ZoomOut className="h-3.5 w-3.5" /></Button>
-                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={fitAll}><Maximize2 className="h-3.5 w-3.5" /></Button>
+                        <Button variant="outline" size="icon" className="h-8 w-8 rounded-xl" onClick={fitAll}><Maximize2 className="h-3.5 w-3.5" /></Button>
                         <div className="w-px bg-border mx-0.5" />
                         {isAdmin && (
                             <Button
                                 variant={editorMode ? 'default' : 'outline'}
                                 size="icon"
-                                className={`h-8 w-8 ${editorMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : ''}`}
+                                className={`h-8 w-8 rounded-xl ${editorMode ? 'bg-blue-600 hover:bg-blue-700 text-white' : ''}`}
                                 title={editorMode ? 'Tắt chỉnh sửa' : 'Chế độ chỉnh sửa'}
                                 onClick={() => { setEditorMode(m => !m); setSelectedCard(null); }}
                             >
@@ -906,7 +905,7 @@ export default function TreeViewPage() {
             {/* Tree viewport + Editor panel row */}
             <div className="flex-1 flex gap-0 min-h-0">
                 <div ref={viewportRef}
-                    className="flex-1 relative overflow-hidden rounded-xl border-2 bg-gradient-to-br from-background to-muted/30 cursor-grab active:cursor-grabbing select-none"
+                    className="relative flex-1 overflow-hidden rounded-[28px] border border-border/70 bg-gradient-to-br from-background via-background to-muted/20 shadow-sm cursor-grab select-none active:cursor-grabbing"
                     onMouseDown={handleMouseDown} onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
                     onClick={() => { setShowSearch(false); setContextMenu(null); if (editorMode) setSelectedCard(null); }}
@@ -1108,7 +1107,7 @@ export default function TreeViewPage() {
             </div>
 
             {/* Legend */}
-            <div className="flex gap-3 text-[10px] text-muted-foreground pt-1.5 px-1 flex-wrap">
+            <div className="flex flex-wrap gap-3 rounded-2xl border border-border/60 bg-card/70 px-3 py-2 text-[10px] text-muted-foreground">
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-blue-100 border border-blue-400" /> Nam (chính tộc)</span>
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-pink-100 border border-pink-400" /> Nữ (chính tộc)</span>
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-100 border border-dashed border-emerald-400" /> Nam (ngoại tộc)</span>
