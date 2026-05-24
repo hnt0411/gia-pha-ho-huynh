@@ -67,6 +67,14 @@ function formatAuthErrorMessage(error: unknown) {
         return 'Supabase hiện không gửi được email đặt lại mật khẩu. Hãy kiểm tra rate limit, Auth logs hoặc cấu hình SMTP.';
     }
 
+    if (normalizedMessage.includes('same password') || normalizedMessage.includes('different from the old password')) {
+        return 'Mật khẩu mới phải khác mật khẩu cũ.';
+    }
+
+    if (normalizedMessage.includes('session') && normalizedMessage.includes('missing')) {
+        return 'Phiên đặt lại mật khẩu chưa được tạo đúng. Hãy yêu cầu gửi mã OTP mới rồi thử lại.';
+    }
+
     if (
         normalizedMessage.includes('otp_expired')
         || normalizedMessage.includes('token has expired')
@@ -284,7 +292,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const resetPasswordWithOtp = useCallback(async (email: string, token: string, password: string) => {
         try {
-            const { error: verifyError } = await supabase.auth.verifyOtp({
+            const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
                 email,
                 token,
                 type: 'recovery',
@@ -292,6 +300,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (verifyError) {
                 return { error: formatAuthErrorMessage(verifyError) };
+            }
+
+            if (verifyData.session) {
+                const { error: setSessionError } = await supabase.auth.setSession({
+                    access_token: verifyData.session.access_token,
+                    refresh_token: verifyData.session.refresh_token,
+                });
+
+                if (setSessionError) {
+                    return { error: formatAuthErrorMessage(setSessionError) };
+                }
+            }
+
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                return {
+                    error: 'Không thể tạo phiên đặt lại mật khẩu. Hãy yêu cầu gửi mã OTP mới rồi thử lại.',
+                };
             }
 
             const { error: updateError } = await supabase.auth.updateUser({ password });

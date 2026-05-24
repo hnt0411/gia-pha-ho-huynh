@@ -32,6 +32,7 @@ export default function ForgotPasswordPage() {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [otpRequested, setOtpRequested] = useState(false);
+    const [pendingEmail, setPendingEmail] = useState('');
     const { resolvedTheme } = useTheme();
     const isDark = resolvedTheme === 'dark';
     const textColor = isDark ? '#e2e8f0' : '#0f172a';
@@ -45,11 +46,8 @@ export default function ForgotPasswordPage() {
     const {
         register,
         handleSubmit,
-        watch,
         formState: { errors },
     } = useForm<ForgotPasswordForm>({ resolver: zodResolver(forgotPasswordSchema) });
-
-    const emailValue = watch('email');
 
     const onSubmit = async (data: ForgotPasswordForm) => {
         setError('');
@@ -64,14 +62,21 @@ export default function ForgotPasswordPage() {
                     return;
                 }
 
+                setPendingEmail(data.email);
                 setOtpRequested(true);
                 setSuccess(result.message || 'Đã gửi mã OTP đặt lại mật khẩu.');
                 return;
             }
 
+            const targetEmail = pendingEmail || data.email;
             const otp = data.otp?.trim() || '';
             const password = data.password || '';
             const confirmPassword = data.confirmPassword || '';
+
+            if (!targetEmail) {
+                setError('Không tìm thấy email để đặt lại mật khẩu. Hãy gửi lại mã OTP.');
+                return;
+            }
 
             if (otp.length < 6) {
                 setError('Hãy nhập đầy đủ mã OTP trong email.');
@@ -88,7 +93,7 @@ export default function ForgotPasswordPage() {
                 return;
             }
 
-            const result = await resetPasswordWithOtp(data.email, otp, password);
+            const result = await resetPasswordWithOtp(targetEmail, otp, password);
             if (result.error) {
                 setError(result.error);
                 return;
@@ -234,7 +239,7 @@ export default function ForgotPasswordPage() {
                                 color: textColor,
                             }}
                             onClick={async () => {
-                                if (!emailValue) {
+                                if (!pendingEmail) {
                                     setError('Không tìm thấy email để gửi lại mã OTP.');
                                     return;
                                 }
@@ -243,7 +248,7 @@ export default function ForgotPasswordPage() {
                                 setSuccess('');
                                 setLoading(true);
                                 try {
-                                    const result = await requestPasswordReset(emailValue);
+                                    const result = await requestPasswordReset(pendingEmail);
                                     if (result.error) {
                                         setError(result.error);
                                         return;
