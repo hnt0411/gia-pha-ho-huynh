@@ -1,6 +1,22 @@
 import { supabase } from './supabase';
 import type { TreeNode, TreeFamily } from './tree-layout';
 
+function extractYear(value: unknown): number | undefined {
+    if (typeof value !== 'string') return undefined;
+
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+
+    const ddmmyyyy = trimmed.match(/(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (ddmmyyyy) return Number(ddmmyyyy[3]);
+
+    const yyyymmdd = trimmed.match(/^(\d{4})-\d{2}-\d{2}$/);
+    if (yyyymmdd) return Number(yyyymmdd[1]);
+
+    const year = trimmed.match(/(\d{4})/);
+    return year ? Number(year[1]) : undefined;
+}
+
 export async function fetchTreeData(): Promise<{ people: TreeNode[]; families: TreeFamily[] }> {
     try {
         const [peopleRes, familiesRes] = await Promise.all([
@@ -17,8 +33,8 @@ export async function fetchTreeData(): Promise<{ people: TreeNode[]; families: T
             isPatrilineal: row.is_patrilineal as boolean,
             families: (row.families as string[]) || [],
             parentFamilies: (row.parent_families as string[]) || [],
-            birthYear: row.birth_year as number | undefined,
-            deathYear: row.death_year as number | undefined,
+            birthYear: (row.birth_year as number | undefined) ?? extractYear(row.birth_date),
+            deathYear: (row.death_year as number | undefined) ?? extractYear(row.death_date),
         }));
         const families = (familiesRes.data || []).map((row) => ({
             handle: row.handle as string,
