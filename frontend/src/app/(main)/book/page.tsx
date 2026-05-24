@@ -230,6 +230,13 @@ export default function BookPage() {
 
     sections.push({ id: 'closing', label: 'Kết sách', pageNum: pageCounter++ });
 
+    const chapterStartPages = new Map<number, number>(
+        sections
+            .filter((section) => section.chapterGen !== undefined && section.isFirstPage)
+            .map((section) => [section.chapterGen as number, section.pageNum]),
+    );
+    const appendixStartPage = sections.find((section) => section.id === 'appendix')?.pageNum ?? pageCounter;
+
     return (
         <div className="min-w-0 w-full overflow-hidden">
             {/* ═══ TOOLBAR ═══ */}
@@ -385,6 +392,7 @@ export default function BookPage() {
                                             style={{ transform: `scale(0.35)` }}
                                         >
                                             <BookSection sectionId={s.id} bookData={bookData} theme={t}
+                                                chapterStartPages={chapterStartPages} appendixStartPage={appendixStartPage}
                                                 memberStart={s.memberStart} memberEnd={s.memberEnd} isFirstPage={s.isFirstPage}
                                                 appendixStart={s.appendixStart} appendixEnd={s.appendixEnd} appendixIsFirst={s.appendixIsFirst} />
                                         </div>
@@ -403,30 +411,28 @@ export default function BookPage() {
             {!previewMode && (
                 <div className="book-content max-w-[210mm] mx-auto bg-white"
                     style={{ fontFamily: "'Noto Serif', Georgia, serif", color: t.text }}>
-
-                    <CoverPage bookData={bookData} theme={t} />
-
-                    <section id="toc" className="page-break px-8 py-12">
-                        <span className="page-label">Trang 2</span>
-                        <TocContent bookData={bookData} theme={t} />
-                    </section>
-
-                    {bookData.chapters.map((ch, ci) => (
-                        <section key={ch.generation} id={`gen-${ch.generation}`} className="page-break px-8 py-12">
-                            <span className="page-label">Trang {ci + 3}</span>
-                            <ChapterContent chapter={ch} theme={t} />
+                    {sections.map((section, index) => (
+                        <section
+                            key={section.id}
+                            id={section.id}
+                            className={`${index === 0 ? 'relative' : 'page-break relative'}`}
+                        >
+                            <span className="page-label">Trang {section.pageNum}</span>
+                            <BookSection
+                                sectionId={section.id}
+                                bookData={bookData}
+                                theme={t}
+                                chapterStartPages={chapterStartPages}
+                                appendixStartPage={appendixStartPage}
+                                memberStart={section.memberStart}
+                                memberEnd={section.memberEnd}
+                                isFirstPage={section.isFirstPage}
+                                appendixStart={section.appendixStart}
+                                appendixEnd={section.appendixEnd}
+                                appendixIsFirst={section.appendixIsFirst}
+                            />
                         </section>
                     ))}
-
-                    <section id="appendix" className="page-break px-8 py-12">
-                        <span className="page-label">Trang {bookData.chapters.length + 3}</span>
-                        <AppendixContent bookData={bookData} theme={t} />
-                    </section>
-
-                    <section id="closing" className="page-break px-8 py-16 text-center" style={{ fontFamily: "'Noto Serif', Georgia, serif" }}>
-                        <span className="page-label">Trang {bookData.chapters.length + 4}</span>
-                        <ClosingContent bookData={bookData} theme={t} />
-                    </section>
                 </div>
             )}
 
@@ -468,15 +474,17 @@ export default function BookPage() {
 }
 
 // ═══ BookSection — renders a single section for preview gallery ═══
-function BookSection({ sectionId, bookData, theme: t, memberStart, memberEnd, isFirstPage, appendixStart, appendixEnd, appendixIsFirst }: {
+function BookSection({ sectionId, bookData, theme: t, chapterStartPages, appendixStartPage, memberStart, memberEnd, isFirstPage, appendixStart, appendixEnd, appendixIsFirst }: {
     sectionId: string; bookData: BookData; theme: Theme;
+    chapterStartPages: Map<number, number>;
+    appendixStartPage: number;
     memberStart?: number; memberEnd?: number; isFirstPage?: boolean;
     appendixStart?: number; appendixEnd?: number; appendixIsFirst?: boolean;
 }) {
     return (
         <div className="book-content px-12 py-12" style={{ fontFamily: "'Noto Serif', Georgia, serif", color: t.text }}>
             {sectionId === 'cover' && <CoverPage bookData={bookData} theme={t} />}
-            {sectionId === 'toc' && <TocContent bookData={bookData} theme={t} />}
+            {sectionId === 'toc' && <TocContent bookData={bookData} theme={t} chapterStartPages={chapterStartPages} appendixStartPage={appendixStartPage} />}
             {(sectionId === 'appendix' || sectionId.startsWith('appendix-')) && (
                 <AppendixContent bookData={bookData} theme={t}
                     startIdx={appendixStart ?? 0} endIdx={appendixEnd ?? bookData.nameIndex.length}
@@ -524,7 +532,12 @@ function CoverPage({ bookData, theme: t }: { bookData: BookData; theme: Theme })
     );
 }
 
-function TocContent({ bookData, theme: t }: { bookData: BookData; theme: Theme }) {
+function TocContent({ bookData, theme: t, chapterStartPages, appendixStartPage }: {
+    bookData: BookData;
+    theme: Theme;
+    chapterStartPages: Map<number, number>;
+    appendixStartPage: number;
+}) {
     return (
         <>
             <h2 className="text-2xl font-bold text-center font-serif mb-8 tracking-wide" style={{ color: t.primary }}>
@@ -540,7 +553,7 @@ function TocContent({ bookData, theme: t }: { bookData: BookData; theme: Theme }
                         </span>
                         <span className="flex-1 border-b border-dotted mx-2" style={{ borderColor: t.borderLight }} />
                         <span className="text-sm font-mono" style={{ color: t.textMuted }}>
-                            {ch.members.length} người
+                            {chapterStartPages.get(ch.generation) ?? '—'}
                         </span>
                     </a>
                 ))}
@@ -548,7 +561,7 @@ function TocContent({ bookData, theme: t }: { bookData: BookData; theme: Theme }
                     <a href="#appendix" className="flex items-baseline gap-2 group">
                         <span className="font-serif font-semibold" style={{ color: t.primary }}>PHỤ LỤC — Chỉ mục tên</span>
                         <span className="flex-1 border-b border-dotted mx-2" style={{ borderColor: t.borderLight }} />
-                        <span className="text-sm font-mono" style={{ color: t.textMuted }}>{bookData.nameIndex.length} tên</span>
+                        <span className="text-sm font-mono" style={{ color: t.textMuted }}>{appendixStartPage}</span>
                     </a>
                 </div>
             </div>
@@ -668,7 +681,6 @@ function AppendixContent({ bookData, theme: t, startIdx, endIdx, showHeader }: {
     // Determine section boundaries
     const patriEnd = patrilineal.length;
     const showPatriHeader = start < patriEnd;
-    const showNgoaiHeader = end > patriEnd && start < allEntries.length;
 
     return (
         <>

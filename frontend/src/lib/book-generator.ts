@@ -70,6 +70,43 @@ function formatYears(birth?: number, death?: number, isLiving?: boolean): string
     return `${birth}`;
 }
 
+function normalizeGeneration(gen: number | undefined, offset: number): number {
+    return (gen ?? offset) - offset;
+}
+
+function buildPersonOrder(people: TreeNode[], families: TreeFamily[]) {
+    const peopleByHandle = new Map(people.map((p) => [p.handle, p]));
+    const personOrder = new Map<string, { familyIndex: number; childIndex: number; name: string }>();
+
+    families.forEach((family, familyIndex) => {
+        if (family.fatherHandle && peopleByHandle.has(family.fatherHandle)) {
+            const father = peopleByHandle.get(family.fatherHandle)!;
+            const prev = personOrder.get(family.fatherHandle);
+            const next = { familyIndex, childIndex: -1, name: father.displayName };
+            if (!prev || familyIndex < prev.familyIndex) personOrder.set(family.fatherHandle, next);
+        }
+
+        if (family.motherHandle && peopleByHandle.has(family.motherHandle)) {
+            const mother = peopleByHandle.get(family.motherHandle)!;
+            const prev = personOrder.get(family.motherHandle);
+            const next = { familyIndex, childIndex: -1, name: mother.displayName };
+            if (!prev || familyIndex < prev.familyIndex) personOrder.set(family.motherHandle, next);
+        }
+
+        family.children.forEach((childHandle, childIndex) => {
+            const child = peopleByHandle.get(childHandle);
+            if (!child) return;
+            const prev = personOrder.get(childHandle);
+            const next = { familyIndex, childIndex, name: child.displayName };
+            if (!prev || familyIndex < prev.familyIndex || (familyIndex === prev.familyIndex && childIndex < prev.childIndex)) {
+                personOrder.set(childHandle, next);
+            }
+        });
+    });
+
+    return personOrder;
+}
+
 // ═══ Main Generator ═══
 
 export function generateBookData(
@@ -79,55 +116,12 @@ export function generateBookData(
 ): BookData {
     const personMap = new Map(people.map(p => [p.handle, p]));
     const familyMap = new Map(families.map(f => [f.handle, f]));
-
-    // ── Step 1: Assign generations via BFS from roots ──
-    const generations = new Map<string, number>();
-    const childOfFamily = new Set<string>();
-    for (const f of families) {
-        for (const ch of f.children) childOfFamily.add(ch);
-    }
-
-    // Find root persons (not a child of any family)
-    const roots = people.filter(p => !childOfFamily.has(p.handle));
-
-    function setGen(handle: string, gen: number) {
-        if (generations.has(handle)) return;
-        generations.set(handle, gen);
-        const person = personMap.get(handle);
-        if (!person) return;
-        for (const famId of person.families) {
-            const fam = familyMap.get(famId);
-            if (!fam) continue;
-            // Spouse gets same generation
-            if (fam.fatherHandle && fam.fatherHandle !== handle) {
-                if (!generations.has(fam.fatherHandle)) generations.set(fam.fatherHandle, gen);
-            }
-            if (fam.motherHandle && fam.motherHandle !== handle) {
-                if (!generations.has(fam.motherHandle)) generations.set(fam.motherHandle, gen);
-            }
-            // Children get gen+1
-            for (const ch of fam.children) setGen(ch, gen + 1);
-        }
-    }
-
-    for (const r of roots) {
-        setGen(r.handle, 0);
-    }
-    // Catch any unassigned
-    for (const p of people) {
-        if (!generations.has(p.handle)) generations.set(p.handle, 0);
-    }
+    const generationOffset = people.reduce((min, person) => Math.min(min, person.generation ?? min), people[0]?.generation ?? 0);
+    const generations = new Map(people.map((person) => [person.handle, normalizeGeneration(person.generation, generationOffset)]));
+    const personOrder = buildPersonOrder(people, families);
 
     // ── Step 2: Build person entries ──
     const bookPersons: BookPerson[] = [];
-
-    // Group by generation
-    const genGroups = new Map<number, TreeNode[]>();
-    for (const p of people) {
-        const gen = generations.get(p.handle) ?? 0;
-        if (!genGroups.has(gen)) genGroups.set(gen, []);
-        genGroups.get(gen)!.push(p);
-    }
 
     // For each patrilineal person, build a BookPerson entry
     for (const p of people) {
@@ -217,13 +211,19 @@ export function generateBookData(
     }
 
     // ── Step 3: Build chapters ──
-    const maxGen = Math.max(...Array.from(generations.values()));
+    const maxGen = Math.max(0, ...Array.from(generations.values()));
     const chapters: BookChapter[] = [];
 
     for (let g = 0; g <= maxGen; g++) {
         const members = bookPersons
             .filter(bp => bp.generation === g)
-            .sort((a, b) => (a.childIndex ?? 99) - (b.childIndex ?? 99));
+            .sort((a, b) => {
+                const orderA = personOrder.get(a.handle) ?? { familyIndex: Number.MAX_SAFE_INTEGER, childIndex: Number.MAX_SAFE_INTEGER, name: a.name };
+                const orderB = personOrder.get(b.handle) ?? { familyIndex: Number.MAX_SAFE_INTEGER, childIndex: Number.MAX_SAFE_INTEGER, name: b.name };
+                if (orderA.familyIndex !== orderB.familyIndex) return orderA.familyIndex - orderB.familyIndex;
+                if (orderA.childIndex !== orderB.childIndex) return orderA.childIndex - orderB.childIndex;
+                return orderA.name.localeCompare(orderB.name, 'vi');
+            });
 
         if (members.length === 0) continue;
 
