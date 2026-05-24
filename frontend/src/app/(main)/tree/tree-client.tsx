@@ -1101,7 +1101,8 @@ export default function TreeViewPage() {
             <div className="flex gap-3 text-[10px] text-muted-foreground pt-1.5 px-1 flex-wrap">
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-blue-100 border border-blue-400" /> Nam (chính tộc)</span>
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-pink-100 border border-pink-400" /> Nữ (chính tộc)</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-slate-100 border border-dashed border-slate-300" /> Ngoại tộc</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-100 border border-dashed border-emerald-400" /> Nam (ngoại tộc)</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-100 border border-dashed border-amber-400" /> Nữ (ngoại tộc)</span>
                 <span className="flex items-center gap-1"><span className="text-red-500">❤</span> Vợ chồng</span>
                 <span className="flex items-center gap-1 opacity-60"><span className="w-2.5 h-2.5 rounded-sm bg-slate-200 border border-slate-400" /> Đã mất</span>
                 <span className="ml-auto opacity-50">Cuộn để zoom • Kéo để di chuyển • Nhấn để xem</span>
@@ -1225,7 +1226,11 @@ function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isS
     const isPatri = node.isPatrilineal;
 
     // ── Color system ──
-    const dotColor = !isPatri ? '#94a3b8' : isMale ? '#818cf8' : isFemale ? '#f472b6' : '#94a3b8';
+    const dotColor = isDead
+        ? '#94a3b8'
+        : isPatri
+            ? (isMale ? '#818cf8' : isFemale ? '#f472b6' : '#94a3b8')
+            : (isMale ? '#22c55e' : isFemale ? '#f59e0b' : '#94a3b8');
 
     // F1: MINI zoom → just a colored dot with tooltip
     if (zoomLevel === 'mini') {
@@ -1255,25 +1260,33 @@ function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isS
     const surnameLabel = nameParts[0] || '';
     const surnameBadge = surnameLabel.length <= 2 ? surnameLabel : surnameLabel.slice(0, 2);
 
-    const avatarBg = !isPatri
-        ? 'bg-stone-300 text-stone-600'
-        : isMale
-            ? (isDead ? 'bg-indigo-300 text-indigo-800' : 'bg-indigo-400 text-white')
-            : isFemale
-                ? (isDead ? 'bg-rose-300 text-rose-800' : 'bg-rose-400 text-white')
-                : 'bg-slate-300 text-slate-600';
-
-    const bgClass = !isPatri
-        ? 'from-stone-50 to-stone-100 border-stone-300/80 border-dashed'
-        : isDead
-            ? (isMale
-                ? 'from-indigo-50/60 to-slate-50 border-indigo-300/60'
-                : 'from-rose-50/60 to-slate-50 border-rose-300/60')
+    const avatarBg = isDead
+        ? 'bg-slate-300 text-slate-700'
+        : isPatri
+            ? isMale
+                ? 'bg-indigo-400 text-white'
+                : isFemale
+                    ? 'bg-rose-400 text-white'
+                    : 'bg-slate-300 text-slate-600'
             : isMale
+                ? 'bg-emerald-400 text-white'
+                : isFemale
+                    ? 'bg-amber-400 text-white'
+                    : 'bg-stone-300 text-stone-600';
+
+    const bgClass = isDead
+        ? 'from-slate-100 to-slate-200 border-slate-400/80'
+        : isPatri
+            ? isMale
                 ? 'from-indigo-50 to-violet-50 border-indigo-300'
                 : isFemale
                     ? 'from-rose-50 to-pink-50 border-rose-300'
-                    : 'from-slate-50 to-slate-100 border-slate-300';
+                    : 'from-slate-50 to-slate-100 border-slate-300'
+            : isMale
+                ? 'from-emerald-50 to-green-50 border-emerald-300 border-dashed'
+                : isFemale
+                    ? 'from-amber-50 to-orange-50 border-amber-300 border-dashed'
+                    : 'from-stone-50 to-stone-100 border-stone-300/80 border-dashed';
 
     const glowClass = isSelected ? 'ring-2 ring-blue-500 ring-offset-2 shadow-blue-200 shadow-lg'
         : isHighlighted ? 'ring-2 ring-amber-400 ring-offset-2'
