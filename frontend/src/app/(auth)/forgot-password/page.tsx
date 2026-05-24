@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/components/auth-provider';
 
 const OTP_MAX_LENGTH = 6;
+const PASSWORD_MIN_LENGTH = 6;
 
 const forgotPasswordSchema = z.object({
     email: z.string().email('Email không hợp lệ'),
@@ -23,6 +24,12 @@ const forgotPasswordSchema = z.object({
 });
 
 type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
+
+function showAlert(message: string) {
+    if (typeof window !== 'undefined') {
+        window.alert(message);
+    }
+}
 
 export default function ForgotPasswordPage() {
     const router = useRouter();
@@ -83,8 +90,10 @@ export default function ForgotPasswordPage() {
                 return;
             }
 
-            if (password.length < 8) {
-                setError('Mật khẩu mới tối thiểu 8 ký tự.');
+            if (password.length < PASSWORD_MIN_LENGTH) {
+                const message = 'Mật khẩu phải tối thiểu 6 ký tự.';
+                setError(message);
+                showAlert(message);
                 return;
             }
 
@@ -189,7 +198,7 @@ export default function ForgotPasswordPage() {
                                     <Input
                                         id="password"
                                         type={showPassword ? 'text' : 'password'}
-                                        placeholder="Tối thiểu 8 ký tự"
+                                        placeholder="Tối thiểu 6 ký tự"
                                         {...register('password')}
                                         className="placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                         style={inputStyle}

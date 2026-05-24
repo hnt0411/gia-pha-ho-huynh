@@ -13,9 +13,12 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
+import type { FieldErrors } from 'react-hook-form';
+
+const PASSWORD_MIN_LENGTH = 6;
 
 const resetPasswordSchema = z.object({
-    password: z.string().min(8, 'Mật khẩu tối thiểu 8 ký tự'),
+    password: z.string().min(PASSWORD_MIN_LENGTH, 'Mật khẩu phải tối thiểu 6 ký tự.'),
     confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
     message: 'Mật khẩu xác nhận không khớp',
@@ -23,6 +26,12 @@ const resetPasswordSchema = z.object({
 });
 
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
+
+function showAlert(message: string) {
+    if (typeof window !== 'undefined') {
+        window.alert(message);
+    }
+}
 
 function ResetPasswordContent() {
     const router = useRouter();
@@ -142,6 +151,16 @@ function ResetPasswordContent() {
         }
     };
 
+    const onInvalid = (formErrors: FieldErrors<ResetPasswordForm>) => {
+        const message = formErrors.password?.message || formErrors.confirmPassword?.message;
+        if (!message) {
+            return;
+        }
+
+        setError(message);
+        showAlert(message);
+    };
+
     return (
         <Card className="border-0 shadow-2xl">
             <CardHeader className="space-y-3 text-center">
@@ -156,7 +175,7 @@ function ResetPasswordContent() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-4">
                     {error && (
                         <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>
                     )}
@@ -180,7 +199,7 @@ function ResetPasswordContent() {
                                     <Input
                                         id="password"
                                         type={showPassword ? 'text' : 'password'}
-                                        placeholder="Tối thiểu 8 ký tự"
+                                        placeholder="Tối thiểu 6 ký tự"
                                         {...register('password')}
                                         className="placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                         style={inputStyle}
