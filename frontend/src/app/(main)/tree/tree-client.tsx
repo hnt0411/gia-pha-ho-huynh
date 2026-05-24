@@ -27,6 +27,14 @@ import { getMockTreeData } from '@/lib/mock-data';
 type ViewMode = 'full' | 'ancestor' | 'descendant';
 type ZoomLevel = 'full' | 'compact' | 'mini';
 
+const FIT_PADDING = 64;
+const ZOOM_OUT_BUFFER_RATIO = 0.78;
+const ZOOM_OUT_BUFFER_OFFSET = 0.1;
+const ABSOLUTE_MIN_SCALE = 0.12;
+const MAX_SCALE = 2.4;
+const BUTTON_ZOOM_STEP = 1.12;
+const WHEEL_ZOOM_SENSITIVITY = 0.0012;
+
 function getZoomLevel(scale: number): ZoomLevel {
     if (scale > 0.6) return 'full';
     if (scale > 0.3) return 'compact';
@@ -518,6 +526,27 @@ export default function TreeViewPage() {
         return computeLayout(normalizedPeople, visibleFamilies);
     }, [displayData, hiddenHandles, generationOffset]);
 
+    const getFitScale = useCallback(() => {
+        if (!layout || !viewportRef.current) return 1;
+        const vw = viewportRef.current.clientWidth;
+        const vh = viewportRef.current.clientHeight;
+        const tw = layout.width + FIT_PADDING * 2;
+        const th = layout.height + FIT_PADDING * 2;
+
+        return Math.max(Math.min(vw / tw, vh / th, 1.05), ABSOLUTE_MIN_SCALE);
+    }, [layout]);
+
+    const clampScale = useCallback((scale: number) => {
+        const fitScale = getFitScale();
+        const minScale = Math.max(
+            ABSOLUTE_MIN_SCALE,
+            fitScale * ZOOM_OUT_BUFFER_RATIO,
+            fitScale - ZOOM_OUT_BUFFER_OFFSET,
+        );
+
+        return Math.min(Math.max(scale, minScale), MAX_SCALE);
+    }, [getFitScale]);
+
     // F4: Check if a person has children (for showing toggle button)
     const hasChildren = useCallback((handle: string): boolean => {
         if (!treeData) return false;
@@ -629,16 +658,13 @@ export default function TreeViewPage() {
         if (!layout || !viewportRef.current) return;
         const vw = viewportRef.current.clientWidth;
         const vh = viewportRef.current.clientHeight;
-        const pad = 40;
-        const tw = layout.width + pad * 2;
-        const th = layout.height + pad * 2;
-        const scale = Math.max(Math.min(vw / tw, vh / th, 1.2), 0.12);
+        const scale = getFitScale();
         setTransform({
             x: (vw - layout.width * scale) / 2,
             y: (vh - layout.height * scale) / 2,
             scale,
         });
-    }, [layout]);
+    }, [getFitScale, layout]);
 
     // Auto-fit on first load
     useEffect(() => {
@@ -668,16 +694,16 @@ export default function TreeViewPage() {
             const rect = el.getBoundingClientRect();
             const mx = e.clientX - rect.left;
             const my = e.clientY - rect.top;
-            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const delta = Math.exp(-e.deltaY * WHEEL_ZOOM_SENSITIVITY);
             setTransform(t => {
-                const newScale = Math.min(Math.max(t.scale * delta, 0.15), 3);
+                const newScale = clampScale(t.scale * delta);
                 const ratio = newScale / t.scale;
                 return { scale: newScale, x: mx - (mx - t.x) * ratio, y: my - (my - t.y) * ratio };
             });
         };
         el.addEventListener('wheel', onWheel, { passive: false });
         return () => el.removeEventListener('wheel', onWheel);
-    }, []);
+    }, [clampScale]);
 
     // === Touch handlers ===
     useEffect(() => {
@@ -709,7 +735,7 @@ export default function TreeViewPage() {
             } else if (e.touches.length === 2) {
                 const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
                 const ratio = dist / pinchRef.current.initialDist;
-                const newScale = Math.min(Math.max(pinchRef.current.initialScale * ratio, 0.15), 3);
+                const newScale = clampScale(pinchRef.current.initialScale * ratio);
 
                 const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                 const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
@@ -735,7 +761,7 @@ export default function TreeViewPage() {
             el.removeEventListener('touchmove', onTouchMove);
             el.removeEventListener('touchend', onTouchEnd);
         };
-    }, [transform.x, transform.y, transform.scale]);
+    }, [clampScale, transform.x, transform.y, transform.scale]);
 
     // Pan to person
     const panToPerson = useCallback((handle: string) => {
@@ -849,13 +875,13 @@ export default function TreeViewPage() {
                         <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setTransform(t => {
                             const vw = viewportRef.current?.clientWidth ?? 0; const vh = viewportRef.current?.clientHeight ?? 0;
                             const cx = vw / 2; const cy = vh / 2;
-                            const ns = Math.min(t.scale * 1.3, 3); const r = ns / t.scale;
+                            const ns = clampScale(t.scale * BUTTON_ZOOM_STEP); const r = ns / t.scale;
                             return { scale: ns, x: cx - (cx - t.x) * r, y: cy - (cy - t.y) * r };
                         })}><ZoomIn className="h-3.5 w-3.5" /></Button>
                         <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setTransform(t => {
                             const vw = viewportRef.current?.clientWidth ?? 0; const vh = viewportRef.current?.clientHeight ?? 0;
                             const cx = vw / 2; const cy = vh / 2;
-                            const ns = Math.max(t.scale / 1.3, 0.15); const r = ns / t.scale;
+                            const ns = clampScale(t.scale / BUTTON_ZOOM_STEP); const r = ns / t.scale;
                             return { scale: ns, x: cx - (cx - t.x) * r, y: cy - (cy - t.y) * r };
                         })}><ZoomOut className="h-3.5 w-3.5" /></Button>
                         <Button variant="outline" size="icon" className="h-8 w-8" onClick={fitAll}><Maximize2 className="h-3.5 w-3.5" /></Button>
