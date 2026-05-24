@@ -27,8 +27,15 @@ interface AuthState {
     isMember: boolean;
     isLoggedIn: boolean;
     signIn: (email: string, password: string) => Promise<{ error?: string }>;
-    signUp: (email: string, password: string, displayName?: string) => Promise<{ error?: string }>;
+    signUp: (
+        email: string,
+        password: string,
+        displayName?: string,
+    ) => Promise<{ error?: string; message?: string; requiresOtp?: boolean }>;
+    verifySignUpOtp: (email: string, token: string) => Promise<{ error?: string }>;
+    resendSignUpOtp: (email: string) => Promise<{ error?: string; message?: string }>;
     requestPasswordReset: (email: string) => Promise<{ error?: string; message?: string }>;
+    resetPasswordWithOtp: (email: string, token: string, password: string) => Promise<{ error?: string }>;
     updatePassword: (password: string) => Promise<{ error?: string }>;
     signOut: () => Promise<void>;
     refreshProfile: () => Promise<void>;
@@ -54,6 +61,19 @@ function formatAuthErrorMessage(error: unknown) {
 
     if (normalizedMessage.includes('error sending confirmation email')) {
         return 'Supabase hiện không gửi được email xác nhận. Hãy kiểm tra cấu hình SMTP, mẫu email và địa chỉ gửi trong Supabase.';
+    }
+
+    if (normalizedMessage.includes('error sending password reset email')) {
+        return 'Supabase hiện không gửi được email đặt lại mật khẩu. Hãy kiểm tra rate limit, Auth logs hoặc cấu hình SMTP.';
+    }
+
+    if (
+        normalizedMessage.includes('otp_expired')
+        || normalizedMessage.includes('token has expired')
+        || normalizedMessage.includes('expired or is invalid')
+        || normalizedMessage.includes('invalid token')
+    ) {
+        return 'Mã OTP không hợp lệ hoặc đã hết hạn. Hãy yêu cầu gửi mã mới rồi thử lại.';
     }
 
     if (
@@ -193,10 +213,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             // If email confirmation is required
             if (data.user && !data.session) {
-                return { error: 'Da dang ky! Kiem tra email de xac nhan tai khoan.' };
+                return {
+                    requiresOtp: true,
+                    message: 'Ma OTP xac nhan dang ky da duoc gui vao email. Hay nhap ma de kich hoat tai khoan.',
+                };
             }
 
             return {};
+        } catch (error) {
+            return { error: formatAuthErrorMessage(error) };
+        }
+    }, []);
+
+    const verifySignUpOtp = useCallback(async (email: string, token: string) => {
+        try {
+            const { error } = await supabase.auth.verifyOtp({
+                email,
+                token,
+                type: 'signup',
+            });
+
+            if (error) {
+                return { error: formatAuthErrorMessage(error) };
+            }
+
+            return {};
+        } catch (error) {
+            return { error: formatAuthErrorMessage(error) };
+        }
+    }, []);
+
+    const resendSignUpOtp = useCallback(async (email: string) => {
+        try {
+            const emailRedirectTo = getAuthRedirectUrl('/login');
+            const { error } = await supabase.auth.resend({
+                type: 'signup',
+                email,
+                options: { emailRedirectTo },
+            });
+
+            if (error) {
+                return { error: formatAuthErrorMessage(error) };
+            }
+
+            return {
+                message: 'Da gui lai ma OTP dang ky. Hay kiem tra inbox va ca thu rac.',
+            };
         } catch (error) {
             return { error: formatAuthErrorMessage(error) };
         }
@@ -211,7 +273,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 return { error: formatAuthErrorMessage(error) };
             }
 
-            return { message: 'Da gui email dat lai mat khau. Hay mo link trong email de tiep tuc.' };
+            return {
+                message:
+                    'Neu email ton tai trong he thong va nha cung cap mail cho phep gui, ban se nhan duoc ma OTP dat lai mat khau. Hay kiem tra inbox va ca thu rac.',
+            };
+        } catch (error) {
+            return { error: formatAuthErrorMessage(error) };
+        }
+    }, []);
+
+    const resetPasswordWithOtp = useCallback(async (email: string, token: string, password: string) => {
+        try {
+            const { error: verifyError } = await supabase.auth.verifyOtp({
+                email,
+                token,
+                type: 'recovery',
+            });
+
+            if (verifyError) {
+                return { error: formatAuthErrorMessage(verifyError) };
+            }
+
+            const { error: updateError } = await supabase.auth.updateUser({ password });
+
+            if (updateError) {
+                return { error: formatAuthErrorMessage(updateError) };
+            }
+
+            await supabase.auth.signOut();
+
+            return {};
         } catch (error) {
             return { error: formatAuthErrorMessage(error) };
         }
@@ -248,7 +339,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isAdmin: role === 'admin',
             isMember: role === 'member' || role === 'admin',
             isLoggedIn: !!user,
-            signIn, signUp, requestPasswordReset, updatePassword, signOut, refreshProfile,
+            signIn,
+            signUp,
+            verifySignUpOtp,
+            resendSignUpOtp,
+            requestPasswordReset,
+            resetPasswordWithOtp,
+            updatePassword,
+            signOut,
+            refreshProfile,
         }}>
             {children}
         </AuthContext.Provider>
