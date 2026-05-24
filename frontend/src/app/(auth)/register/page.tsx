@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { TreePine, Eye, EyeOff } from 'lucide-react';
+import { TreePine, Eye, EyeOff, TriangleAlert } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -131,7 +131,10 @@ function RegisterContent() {
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     {!inviteCode && (
                         <div className="rounded-md bg-amber-500/10 p-3 text-sm text-amber-600 dark:text-amber-400">
-                            ⚠️ Bạn cần có mã mời từ Admin để đăng ký
+                            <span className="inline-flex items-center gap-2">
+                                <TriangleAlert className="h-4 w-4" />
+                                Bạn cần có mã mời từ Admin để đăng ký
+                            </span>
                         </div>
                     )}
 

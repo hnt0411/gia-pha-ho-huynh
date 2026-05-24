@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Check, X, Clock, MessageSquarePlus, ChevronDown, Filter } from 'lucide-react';
+import { Check, X, MessageSquarePlus, FileText, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/components/auth-provider';
@@ -132,7 +132,10 @@ export default function AdminEditsPage() {
                                             <p className="text-xs font-medium text-muted-foreground mb-1">Giá trị mới:</p>
                                             <p className="text-sm font-medium">{c.new_value}</p>
                                             {c.note && (
-                                                <p className="text-xs text-muted-foreground mt-2 italic">📝 {c.note}</p>
+                                                <p className="mt-2 inline-flex items-center gap-1.5 text-xs italic text-muted-foreground">
+                                                    <FileText className="h-3.5 w-3.5" />
+                                                    {c.note}
+                                                </p>
                                             )}
                                         </div>
 
@@ -145,8 +148,9 @@ export default function AdminEditsPage() {
 
                                         {/* Admin note */}
                                         {c.admin_note && (
-                                            <p className="text-xs bg-blue-50 dark:bg-blue-950/30 rounded p-2 text-blue-700 dark:text-blue-400">
-                                                💬 Admin: {c.admin_note}
+                                            <p className="inline-flex items-center gap-1.5 text-xs bg-blue-50 dark:bg-blue-950/30 rounded p-2 text-blue-700 dark:text-blue-400">
+                                                <MessageSquare className="h-3.5 w-3.5" />
+                                                <span>Admin: {c.admin_note}</span>
                                             </p>
                                         )}
                                     </div>

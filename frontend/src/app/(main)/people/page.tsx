@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Search } from 'lucide-react';
+import { Users, Search, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -136,7 +136,7 @@ export default function PeopleListPage() {
                                     >
                                         <TableCell className="font-medium">
                                             {p.displayName}
-                                            {p.isPrivacyFiltered && <span className="ml-1 text-amber-500">🔒</span>}
+                                            {p.isPrivacyFiltered && <Lock className="ml-1 inline h-3.5 w-3.5 text-amber-500" />}
                                         </TableCell>
                                         <TableCell>
                                             <Badge variant="outline">

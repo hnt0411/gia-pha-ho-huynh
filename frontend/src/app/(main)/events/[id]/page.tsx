@@ -2,18 +2,18 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { CalendarDays, MapPin, Clock, Users, ArrowLeft, Check, X, HelpCircle, Loader2 } from 'lucide-react';
+import { MapPin, Clock, Users, ArrowLeft, Check, X, HelpCircle, Loader2, Flame, Handshake, Sparkles, CalendarRange, type LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/auth-provider';
 import { supabase } from '@/lib/supabase';
 
-const typeLabels: Record<string, { label: string; emoji: string }> = {
-    MEMORIAL: { label: 'Giỗ', emoji: '🕯️' },
-    MEETING: { label: 'Họp họ', emoji: '🤝' },
-    FESTIVAL: { label: 'Lễ hội', emoji: '🎊' },
-    OTHER: { label: 'Khác', emoji: '📅' },
+const typeLabels: Record<string, { label: string; icon: LucideIcon }> = {
+    MEMORIAL: { label: 'Giỗ', icon: Flame },
+    MEETING: { label: 'Họp họ', icon: Handshake },
+    FESTIVAL: { label: 'Lễ hội', icon: Sparkles },
+    OTHER: { label: 'Khác', icon: CalendarRange },
 };
 
 const rsvpOptions = [
@@ -75,6 +75,7 @@ export default function EventDetailPage() {
     if (!event) return <div className="text-center py-12 text-muted-foreground">Không tìm thấy sự kiện</div>;
 
     const tl = typeLabels[(event.type as string)] || typeLabels.OTHER;
+    const TypeIcon = tl.icon;
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
@@ -84,7 +85,10 @@ export default function EventDetailPage() {
 
             <Card>
                 <CardHeader>
-                    <Badge variant="secondary" className="w-fit">{tl.emoji} {tl.label}</Badge>
+                    <Badge variant="secondary" className="w-fit">
+                        <TypeIcon className="mr-1 h-3 w-3" />
+                        {tl.label}
+                    </Badge>
                     <CardTitle className="text-2xl">{event.title as string}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">

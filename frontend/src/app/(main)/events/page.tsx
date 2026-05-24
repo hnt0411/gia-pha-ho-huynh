@@ -8,13 +8,13 @@ import {
     Clock,
     Users,
     Plus,
-    ChevronLeft,
-    ChevronRight,
-    Check,
-    X,
-    HelpCircle,
+    Flame,
+    Handshake,
+    Sparkles,
+    CalendarRange,
+    type LucideIcon,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,11 +44,11 @@ interface EventItem {
     rsvp_count?: number;
 }
 
-const typeLabels: Record<string, { label: string; emoji: string }> = {
-    MEMORIAL: { label: 'Giỗ', emoji: '🕯️' },
-    MEETING: { label: 'Họp họ', emoji: '🤝' },
-    FESTIVAL: { label: 'Lễ hội', emoji: '🎊' },
-    OTHER: { label: 'Khác', emoji: '📅' },
+const typeLabels: Record<string, { label: string; icon: LucideIcon }> = {
+    MEMORIAL: { label: 'Giỗ', icon: Flame },
+    MEETING: { label: 'Họp họ', icon: Handshake },
+    FESTIVAL: { label: 'Lễ hội', icon: Sparkles },
+    OTHER: { label: 'Khác', icon: CalendarRange },
 };
 
 function formatDate(dateStr: string) {
@@ -107,7 +107,7 @@ function CreateEventDialog({ onCreated }: { onCreated: () => void }) {
                     <Input placeholder="Địa điểm" value={location} onChange={e => setLocation(e.target.value)} />
                     <select className="w-full rounded-md border px-3 py-2 text-sm bg-background" value={type} onChange={e => setType(e.target.value)}>
                         {Object.entries(typeLabels).map(([k, v]) => (
-                            <option key={k} value={k}>{v.emoji} {v.label}</option>
+                            <option key={k} value={k}>{v.label}</option>
                         ))}
                     </select>
                     <Button className="w-full" onClick={handleSubmit} disabled={!title.trim() || !startAt || submitting}>
@@ -122,13 +122,17 @@ function CreateEventDialog({ onCreated }: { onCreated: () => void }) {
 function EventCard({ event }: { event: EventItem }) {
     const router = useRouter();
     const tl = typeLabels[event.type] || typeLabels.OTHER;
+    const TypeIcon = tl.icon;
 
     return (
         <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push(`/events/${event.id}`)}>
             <CardContent className="p-4 space-y-2">
                 <div className="flex items-start justify-between">
                     <div>
-                        <Badge variant="secondary" className="text-xs mb-1">{tl.emoji} {tl.label}</Badge>
+                        <Badge variant="secondary" className="text-xs mb-1">
+                            <TypeIcon className="mr-1 h-3 w-3" />
+                            {tl.label}
+                        </Badge>
                         <h3 className="font-semibold">{event.title}</h3>
                     </div>
                     {event.rsvp_count !== undefined && event.rsvp_count > 0 && (

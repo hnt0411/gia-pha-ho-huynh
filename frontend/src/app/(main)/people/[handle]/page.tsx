@@ -211,7 +211,10 @@ export default function PersonProfilePage() {
             {/* Privacy notice */}
             {person.isPrivacyFiltered && person._privacyNote && (
                 <div className="rounded-md bg-amber-500/10 border border-amber-500/20 p-3 text-sm text-amber-600 dark:text-amber-400">
-                    🔒 {person._privacyNote}
+                    <span className="inline-flex items-center gap-2">
+                        <Lock className="h-4 w-4" />
+                        {person._privacyNote}
+                    </span>
                 </div>
             )}
 

@@ -229,7 +229,7 @@ function PostCard({ post, onRefresh }: { post: Post; onRefresh: () => void }) {
                 </div>
             </CardHeader>
             <CardContent className="space-y-3">
-                {post.is_pinned && <Badge variant="secondary" className="text-xs">📌 Ghim</Badge>}
+                {post.is_pinned && <Badge variant="secondary" className="text-xs"><Pin className="mr-1 h-3 w-3" />Ghim</Badge>}
                 {post.title && <h3 className="font-semibold">{post.title}</h3>}
                 <p className="text-sm whitespace-pre-wrap">{post.body}</p>
                 <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setShowComments(!showComments)}>

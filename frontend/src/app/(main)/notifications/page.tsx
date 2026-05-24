@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Bell, CheckCheck, ExternalLink } from 'lucide-react';
+import { Bell, CheckCheck, ExternalLink, FileText, MessageSquareText, BellRing, BadgeCheck, Settings2, Pin, type LucideIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -19,13 +19,17 @@ interface NotificationItem {
     created_at: string;
 }
 
-const typeIcons: Record<string, string> = {
-    NEW_POST: '📝', NEW_COMMENT: '💬', EVENT_REMINDER: '🔔', RSVP_UPDATE: '✅', SYSTEM: '⚙️',
+const typeIcons: Record<string, LucideIcon> = {
+    NEW_POST: FileText,
+    NEW_COMMENT: MessageSquareText,
+    EVENT_REMINDER: BellRing,
+    RSVP_UPDATE: BadgeCheck,
+    SYSTEM: Settings2,
 };
 
 export default function NotificationsPage() {
     const router = useRouter();
-    const { user, isLoggedIn } = useAuth();
+    const { user } = useAuth();
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -83,7 +87,14 @@ export default function NotificationsPage() {
                         <Card key={notif.id} className={`cursor-pointer transition-colors ${!notif.is_read ? 'bg-primary/5 border-primary/20' : ''}`}
                             onClick={() => { if (!notif.is_read) markAsRead(notif.id); if (notif.link_url) router.push(notif.link_url); }}>
                             <CardContent className="p-4 flex items-start gap-3">
-                                <span className="text-lg">{typeIcons[notif.type] || '📌'}</span>
+                                {(() => {
+                                    const Icon = typeIcons[notif.type] || Pin;
+                                    return (
+                                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                            <Icon className="h-4 w-4" />
+                                        </span>
+                                    );
+                                })()}
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                         <span className="font-medium text-sm">{notif.title}</span>

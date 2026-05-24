@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TreePine, Users, Image, Activity, Newspaper, CalendarDays } from 'lucide-react';
+import { TreePine, Users, Image, Newspaper, CalendarDays, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
@@ -85,10 +85,10 @@ export default function HomePage() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                     <div className="flex flex-wrap gap-2">
-                        <Link href="/tree"><Button variant="outline">🌳 Xem cây gia phả</Button></Link>
-                        <Link href="/feed"><Button variant="outline">📰 Bảng tin</Button></Link>
-                        <Link href="/events"><Button variant="outline">📅 Sự kiện</Button></Link>
-                        <Link href="/book"><Button variant="outline">📖 Sách gia phả</Button></Link>
+                        <Link href="/tree"><Button variant="outline"><TreePine className="mr-2 h-4 w-4" />Xem cây gia phả</Button></Link>
+                        <Link href="/feed"><Button variant="outline"><Newspaper className="mr-2 h-4 w-4" />Bảng tin</Button></Link>
+                        <Link href="/events"><Button variant="outline"><CalendarDays className="mr-2 h-4 w-4" />Sự kiện</Button></Link>
+                        <Link href="/book"><Button variant="outline"><BookOpen className="mr-2 h-4 w-4" />Sách gia phả</Button></Link>
                     </div>
                 </CardContent>
             </Card>

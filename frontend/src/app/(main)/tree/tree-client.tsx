@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback, useMemo, memo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
 import { ContributeDialog } from '@/components/contribute-dialog';
-import { Search, ZoomIn, ZoomOut, Maximize2, TreePine, Eye, Users, GitBranch, User, ArrowDownToLine, ArrowUpFromLine, Crosshair, X, ChevronDown, ChevronRight, BarChart3, Package, Link, ChevronsDownUp, ChevronsUpDown, Copy, Pencil, Save, RotateCcw, Trash2, ArrowUp, ArrowDown, GripVertical, MessageSquarePlus } from 'lucide-react';
+import { Search, ZoomIn, ZoomOut, Maximize2, TreePine, Eye, Users, GitBranch, User, ArrowDownToLine, ArrowUpFromLine, Crosshair, X, ChevronDown, ChevronRight, BarChart3, Package, Link, ChevronsDownUp, ChevronsUpDown, Copy, Pencil, Save, RotateCcw, Trash2, ArrowUp, ArrowDown, GripVertical, MessageSquarePlus, Heart, Lock, CheckCircle2, CircleSlash, ArrowRight, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -848,7 +848,10 @@ export default function TreeViewPage() {
                                         }}
                                             className="w-full text-left px-2.5 py-1.5 rounded text-xs hover:bg-accent transition-colors flex justify-between">
                                             <span className="font-medium">{p.displayName}</span>
-                                            <span className="text-muted-foreground">{'generation' in p ? `Đời ${getDisplayGen((p as any).generation)}` : ''}{p.isPrivacyFiltered ? ' 🔒' : ''}</span>
+                                            <span className="flex items-center gap-1 text-muted-foreground">
+                                                {'generation' in p ? `Đời ${getDisplayGen((p as any).generation)}` : ''}
+                                                {p.isPrivacyFiltered && <Lock className="h-3 w-3 text-amber-500" />}
+                                            </span>
                                         </button>
                                     ))}
                                 </CardContent>
@@ -914,9 +917,17 @@ export default function TreeViewPage() {
                                 {couplePaths && <path d={couplePaths} stroke="#cbd5e1" strokeWidth={1.5} fill="none" strokeDasharray="4,3" />}
                                 {/* Couple hearts — only visible */}
                                 {visibleCouples.map(c => (
-                                    <text key={c.familyHandle}
-                                        x={c.midX} y={c.y + CARD_H / 2 + 4}
-                                        textAnchor="middle" fontSize="10" fill="#e11d48">❤</text>
+                                    <foreignObject
+                                        key={c.familyHandle}
+                                        x={c.midX - 8}
+                                        y={c.y + CARD_H / 2 - 4}
+                                        width={16}
+                                        height={16}
+                                    >
+                                        <div className="flex h-4 w-4 items-center justify-center">
+                                            <Heart className="h-3.5 w-3.5 fill-red-500 text-red-500" />
+                                        </div>
+                                    </foreignObject>
                                 ))}
                             </svg>
 
@@ -1091,7 +1102,7 @@ export default function TreeViewPage() {
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-pink-100 border border-pink-400" /> Nữ (chính tộc)</span>
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-emerald-100 border border-dashed border-emerald-400" /> Nam (ngoại tộc)</span>
                 <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-amber-100 border border-dashed border-amber-400" /> Nữ (ngoại tộc)</span>
-                <span className="flex items-center gap-1"><span className="text-red-500">❤</span> Vợ chồng</span>
+                <span className="flex items-center gap-1"><Heart className="h-3 w-3 text-red-500 fill-red-500" /> Vợ chồng</span>
                 <span className="flex items-center gap-1 opacity-60"><span className="w-2.5 h-2.5 rounded-sm bg-slate-200 border border-slate-400" /> Đã mất</span>
                 <span className="ml-auto opacity-50">Cuộn để zoom • Kéo để di chuyển • Nhấn để xem</span>
             </div>
@@ -1362,12 +1373,21 @@ function PersonCard({ item, birthOrder, isHighlighted, isFocused, isHovered, isS
                     <div className="mt-0.5 flex items-center gap-1">
                         <span className="text-[9px] font-semibold px-1 py-0.5 rounded bg-amber-100 text-amber-700 border border-amber-200/60">Đời {getDisplayGen(item.node.originalGeneration ?? item.generation)}</span>
                         {isDead ? (
-                            <span className="text-[9px] text-slate-400">✝ Đã mất</span>
+                            <span className="inline-flex items-center gap-0.5 text-[9px] text-slate-500">
+                                <CircleSlash className="h-2.5 w-2.5" />
+                                Đã mất
+                            </span>
                         ) : (
-                            <span className="text-[9px] text-emerald-600 font-medium">● Còn sống</span>
+                            <span className="inline-flex items-center gap-0.5 text-[9px] text-emerald-600 font-medium">
+                                <CheckCircle2 className="h-2.5 w-2.5" />
+                                Còn sống
+                            </span>
                         )}
                         {!isPatri && (
-                            <span className="text-[9px] text-slate-400 ml-0.5">· Ngoại tộc</span>
+                            <span className="inline-flex items-center gap-0.5 text-[9px] text-slate-400 ml-0.5">
+                                <Shield className="h-2.5 w-2.5" />
+                                Ngoại tộc
+                            </span>
                         )}
                     </div>
                 </div>
@@ -1411,7 +1431,7 @@ function BranchSummaryCard({ summary, parentNode, zoomLevel, onExpand }: {
                 </div>
                 <div className="hidden group-hover:block absolute -top-10 left-1/2 -translate-x-1/2 z-50
                     bg-slate-900 text-white text-[10px] px-2 py-1 rounded shadow-lg whitespace-nowrap pointer-events-none">
-                    📦 {summary.totalDescendants} người · Đời {summary.generationRange[0]}→{summary.generationRange[1]}
+                    {summary.totalDescendants} người · Đời {summary.generationRange[0]}→{summary.generationRange[1]}
                 </div>
             </div>
         );
@@ -1431,15 +1451,24 @@ function BranchSummaryCard({ summary, parentNode, zoomLevel, onExpand }: {
                 </div>
                 <div className="flex-1 min-w-0">
                     <p className="font-semibold text-[11px] leading-tight text-amber-900">
-                        📦 {summary.totalDescendants} người
+                        {summary.totalDescendants} người
                     </p>
                     <p className="text-[10px] text-amber-700 mt-0.5">
                         Đời {summary.generationRange[0]} → {summary.generationRange[1]}
                     </p>
                     <div className="mt-0.5 flex items-center gap-1.5 text-[9px]">
-                        <span className="text-emerald-600 font-medium">● {summary.livingCount}</span>
-                        <span className="text-slate-400">✝ {summary.deceasedCount}</span>
-                        <span className="text-amber-600 ml-auto text-[8px] font-medium">▶ Mở</span>
+                        <span className="inline-flex items-center gap-0.5 text-emerald-600 font-medium">
+                            <CheckCircle2 className="h-2.5 w-2.5" />
+                            {summary.livingCount}
+                        </span>
+                        <span className="inline-flex items-center gap-0.5 text-slate-400">
+                            <CircleSlash className="h-2.5 w-2.5" />
+                            {summary.deceasedCount}
+                        </span>
+                        <span className="inline-flex items-center gap-0.5 text-amber-600 ml-auto text-[8px] font-medium">
+                            <ArrowRight className="h-2.5 w-2.5" />
+                            Mở
+                        </span>
                     </div>
                 </div>
             </div>
@@ -1734,7 +1763,10 @@ function EditorPanel({ selectedCard, treeData, getDisplayGen, onReorderChildren,
                                     }`}
                                 onClick={() => onToggleLiving(person.handle, !person.isLiving)}
                             >
-                                {person.isLiving ? '● Còn sống' : '○ Đã mất'}
+                                <span className="inline-flex items-center gap-1">
+                                    {person.isLiving ? <CheckCircle2 className="h-3 w-3" /> : <CircleSlash className="h-3 w-3" />}
+                                    {person.isLiving ? 'Còn sống' : 'Đã mất'}
+                                </span>
                             </button>
                         </div>
 
@@ -1744,7 +1776,7 @@ function EditorPanel({ selectedCard, treeData, getDisplayGen, onReorderChildren,
                                 className="w-full flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                                 onClick={handleSave} disabled={saving}
                             >
-                                <Save className="h-3.5 w-3.5" />{saving ? 'Đang lưu...' : 'Lưu thay đổi → Supabase'}
+                                <Save className="h-3.5 w-3.5" />{saving ? 'Đang lưu...' : 'Lưu thay đổi'}
                             </button>
                         )}
                     </div>
@@ -1820,7 +1852,7 @@ function EditorPanel({ selectedCard, treeData, getDisplayGen, onReorderChildren,
                                 <input
                                     type="text"
                                     className="w-full border rounded px-2 py-1 text-xs bg-background placeholder:text-muted-foreground/60"
-                                    placeholder="🔍 Tìm cha mới..."
+                                    placeholder="Tìm cha mới..."
                                     value={parentSearch}
                                     onChange={e => { setParentSearch(e.target.value); setShowParentDropdown(true); }}
                                     onFocus={() => setShowParentDropdown(true)}
@@ -1848,7 +1880,7 @@ function EditorPanel({ selectedCard, treeData, getDisplayGen, onReorderChildren,
                                                     >
                                                         <span className="truncate flex-1">{f.label}</span>
                                                         <span className="text-muted-foreground/60 shrink-0">Đ{f.gen}</span>
-                                                        {isSelected && <span className="text-blue-600 shrink-0">✓</span>}
+                                                        {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 shrink-0" />}
                                                     </button>
                                                 );
                                             })
