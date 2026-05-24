@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TreePine, Eye, EyeOff, UserPlus, LogIn } from 'lucide-react';
@@ -137,6 +138,13 @@ export default function LoginPage() {
                             </button>
                         </div>
                         {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+                        {mode === 'login' && (
+                            <div className="flex justify-end">
+                                <Link href="/forgot-password" className="text-xs font-medium text-primary hover:underline">
+                                    Quên mật khẩu?
+                                </Link>
+                            </div>
+                        )}
                     </div>
 
                     <Button type="submit" className="w-full shadow-md hover:shadow-lg transition-shadow" disabled={loading}>

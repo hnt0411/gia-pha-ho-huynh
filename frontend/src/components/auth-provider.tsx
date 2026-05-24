@@ -28,6 +28,8 @@ interface AuthState {
     isLoggedIn: boolean;
     signIn: (email: string, password: string) => Promise<{ error?: string }>;
     signUp: (email: string, password: string, displayName?: string) => Promise<{ error?: string }>;
+    requestPasswordReset: (email: string) => Promise<{ error?: string; message?: string }>;
+    updatePassword: (password: string) => Promise<{ error?: string }>;
     signOut: () => Promise<void>;
     refreshProfile: () => Promise<void>;
 }
@@ -65,12 +67,12 @@ function formatAuthErrorMessage(error: unknown) {
     return message || 'Da xay ra loi khi ket noi he thong.';
 }
 
-function getEmailRedirectUrl() {
+function getAuthRedirectUrl(path: string) {
     if (typeof window === 'undefined') {
         return undefined;
     }
 
-    return `${window.location.origin}/login`;
+    return `${window.location.origin}${path}`;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -172,7 +174,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const signUp = useCallback(async (email: string, password: string, displayName?: string) => {
         try {
-            const emailRedirectTo = getEmailRedirectUrl();
+            const emailRedirectTo = getAuthRedirectUrl('/login');
             const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
@@ -200,6 +202,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, []);
 
+    const requestPasswordReset = useCallback(async (email: string) => {
+        try {
+            const emailRedirectTo = getAuthRedirectUrl('/reset-password');
+            const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: emailRedirectTo });
+
+            if (error) {
+                return { error: formatAuthErrorMessage(error) };
+            }
+
+            return { message: 'Da gui email dat lai mat khau. Hay mo link trong email de tiep tuc.' };
+        } catch (error) {
+            return { error: formatAuthErrorMessage(error) };
+        }
+    }, []);
+
+    const updatePassword = useCallback(async (password: string) => {
+        try {
+            const { error } = await supabase.auth.updateUser({ password });
+
+            if (error) {
+                return { error: formatAuthErrorMessage(error) };
+            }
+
+            return {};
+        } catch (error) {
+            return { error: formatAuthErrorMessage(error) };
+        }
+    }, []);
+
     const signOut = useCallback(async () => {
         await supabase.auth.signOut();
         setProfile(null);
@@ -217,7 +248,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isAdmin: role === 'admin',
             isMember: role === 'member' || role === 'admin',
             isLoggedIn: !!user,
-            signIn, signUp, signOut, refreshProfile,
+            signIn, signUp, requestPasswordReset, updatePassword, signOut, refreshProfile,
         }}>
             {children}
         </AuthContext.Provider>
