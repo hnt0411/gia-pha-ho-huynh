@@ -14,6 +14,15 @@ import { CommentSection } from '@/components/comment-section';
 import { useAuth } from '@/components/auth-provider';
 import { Input } from '@/components/ui/input';
 
+function extractYearFromDateValue(value: string | undefined) {
+    if (!value) return null;
+
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+
+    const yearMatch = trimmed.match(/(?:^|[^\d])((?:19|20)\d{2})(?:[^\d]|$)/);
+    return yearMatch ? Number(yearMatch[1]) : null;
+}
 
 export default function PersonProfilePage() {
     const params = useParams();
@@ -77,9 +86,15 @@ export default function PersonProfilePage() {
         if (editedPerson.firstName !== undefined) updateFields.first_name = editedPerson.firstName;
         if (editedPerson.nickName !== undefined) updateFields.nick_name = editedPerson.nickName;
         if (editedPerson.isLiving !== undefined) updateFields.is_living = editedPerson.isLiving;
-        if (editedPerson.birthDate !== undefined) updateFields.birth_date = editedPerson.birthDate;
+        if (editedPerson.birthDate !== undefined) {
+            updateFields.birth_date = editedPerson.birthDate;
+            updateFields.birth_year = extractYearFromDateValue(editedPerson.birthDate);
+        }
         if (editedPerson.birthPlace !== undefined) updateFields.birth_place = editedPerson.birthPlace;
-        if (editedPerson.deathDate !== undefined) updateFields.death_date = editedPerson.deathDate;
+        if (editedPerson.deathDate !== undefined) {
+            updateFields.death_date = editedPerson.deathDate;
+            updateFields.death_year = extractYearFromDateValue(editedPerson.deathDate);
+        }
         if (editedPerson.deathPlace !== undefined) updateFields.death_place = editedPerson.deathPlace;
         if (Object.keys(updateFields).length === 0) {
             setIsEditing(false);

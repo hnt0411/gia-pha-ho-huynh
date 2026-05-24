@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Search, Filter } from 'lucide-react';
+import { Users, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,9 +22,21 @@ interface Person {
     gender: number;
     birthYear?: number;
     deathYear?: number;
+    birthDate?: string;
+    deathDate?: string;
     isLiving: boolean;
     isPrivacyFiltered: boolean;
     _privacyNote?: string;
+}
+
+function extractYearFromDateValue(value: string | undefined) {
+    if (!value) return undefined;
+
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+
+    const yearMatch = trimmed.match(/(?:^|[^\d])((?:19|20)\d{2})(?:[^\d]|$)/);
+    return yearMatch ? Number(yearMatch[1]) : undefined;
 }
 
 export default function PeopleListPage() {
@@ -41,15 +53,17 @@ export default function PeopleListPage() {
                 const { supabase } = await import('@/lib/supabase');
                 const { data, error } = await supabase
                     .from('people')
-                    .select('handle, display_name, gender, birth_year, death_year, is_living, is_privacy_filtered')
+                    .select('handle, display_name, gender, birth_year, death_year, birth_date, death_date, is_living, is_privacy_filtered')
                     .order('display_name', { ascending: true });
                 if (!error && data) {
                     setPeople(data.map((row: Record<string, unknown>) => ({
                         handle: row.handle as string,
                         displayName: row.display_name as string,
                         gender: row.gender as number,
-                        birthYear: row.birth_year as number | undefined,
-                        deathYear: row.death_year as number | undefined,
+                        birthYear: (row.birth_year as number | undefined) ?? extractYearFromDateValue(row.birth_date as string | undefined),
+                        deathYear: (row.death_year as number | undefined) ?? extractYearFromDateValue(row.death_date as string | undefined),
+                        birthDate: row.birth_date as string | undefined,
+                        deathDate: row.death_date as string | undefined,
                         isLiving: row.is_living as boolean,
                         isPrivacyFiltered: row.is_privacy_filtered as boolean,
                     })));
