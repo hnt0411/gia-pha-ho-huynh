@@ -618,7 +618,7 @@ function PersonEntry({ person, index, theme: t }: { person: BookPerson; index: n
                     <h3 className="text-base font-bold tracking-wide leading-tight" style={{ color: t.primary }}>{person.name}</h3>
                     <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>
                         {years}
-                        {!person.isLiving && person.deathYear && ' · Đã mất'}
+                        {!person.isLiving && ' · Đã mất'}
                         {person.isLiving && ' · Còn sống'}
                     </p>
                 </div>
