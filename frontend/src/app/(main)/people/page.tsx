@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Users, Search, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -15,11 +15,13 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { computeLayout, type TreeFamily, type TreeNode } from '@/lib/tree-layout';
 
 interface Person {
     handle: string;
     displayName: string;
     gender: number;
+    generation: number;
     birthYear?: number;
     deathYear?: number;
     birthDate?: string;
@@ -42,6 +44,7 @@ function extractYearFromDateValue(value: string | undefined) {
 export default function PeopleListPage() {
     const router = useRouter();
     const [people, setPeople] = useState<Person[]>([]);
+    const [treeOrder, setTreeOrder] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [genderFilter, setGenderFilter] = useState<number | null>(null);
@@ -51,15 +54,21 @@ export default function PeopleListPage() {
         const fetchPeople = async () => {
             try {
                 const { supabase } = await import('@/lib/supabase');
-                const { data, error } = await supabase
-                    .from('people')
-                    .select('handle, display_name, gender, birth_year, death_year, birth_date, death_date, is_living, is_privacy_filtered')
-                    .order('display_name', { ascending: true });
-                if (!error && data) {
-                    setPeople(data.map((row: Record<string, unknown>) => ({
+                const [{ data: peopleRows, error: peopleError }, { data: familyRows, error: familyError }] = await Promise.all([
+                    supabase
+                        .from('people')
+                        .select('handle, display_name, gender, generation, birth_year, death_year, birth_date, death_date, is_living, is_privacy_filtered, is_patrilineal, families, parent_families'),
+                    supabase
+                        .from('families')
+                        .select('handle, father_handle, mother_handle, children'),
+                ]);
+
+                if (!peopleError && peopleRows) {
+                    setPeople(peopleRows.map((row: Record<string, unknown>) => ({
                         handle: row.handle as string,
                         displayName: row.display_name as string,
                         gender: row.gender as number,
+                        generation: row.generation as number,
                         birthYear: (row.birth_year as number | undefined) ?? extractYearFromDateValue(row.birth_date as string | undefined),
                         deathYear: (row.death_year as number | undefined) ?? extractYearFromDateValue(row.death_date as string | undefined),
                         birthDate: row.birth_date as string | undefined,
@@ -68,18 +77,73 @@ export default function PeopleListPage() {
                         isPrivacyFiltered: row.is_privacy_filtered as boolean,
                     })));
                 }
+
+                if (!peopleError && peopleRows && !familyError && familyRows) {
+                    const treePeople: TreeNode[] = peopleRows.map((row: Record<string, unknown>) => ({
+                        handle: row.handle as string,
+                        displayName: row.display_name as string,
+                        gender: row.gender as number,
+                        generation: row.generation as number,
+                        isLiving: row.is_living as boolean,
+                        isPrivacyFiltered: row.is_privacy_filtered as boolean,
+                        isPatrilineal: Boolean(row.is_patrilineal),
+                        families: (row.families as string[] | undefined) ?? [],
+                        parentFamilies: (row.parent_families as string[] | undefined) ?? [],
+                        birthYear: (row.birth_year as number | undefined) ?? extractYearFromDateValue(row.birth_date as string | undefined),
+                        deathYear: (row.death_year as number | undefined) ?? extractYearFromDateValue(row.death_date as string | undefined),
+                    }));
+
+                    const treeFamilies: TreeFamily[] = familyRows.map((row: Record<string, unknown>) => ({
+                        handle: row.handle as string,
+                        fatherHandle: row.father_handle as string | undefined,
+                        motherHandle: row.mother_handle as string | undefined,
+                        children: (row.children as string[] | undefined) ?? [],
+                    }));
+
+                    const orderedNodes = computeLayout(treePeople, treeFamilies).nodes
+                        .slice()
+                        .sort((a, b) => a.y - b.y || a.x - b.x);
+
+                    const nextTreeOrder = orderedNodes.reduce<Record<string, number>>((acc, node, index) => {
+                        acc[node.handle] = index;
+                        return acc;
+                    }, {});
+
+                    setTreeOrder(nextTreeOrder);
+                }
             } catch { /* ignore */ }
             setLoading(false);
         };
         fetchPeople();
     }, []);
 
-    const filtered = people.filter((p) => {
-        if (search && !p.displayName.toLowerCase().includes(search.toLowerCase())) return false;
-        if (genderFilter !== null && p.gender !== genderFilter) return false;
-        if (livingFilter !== null && p.isLiving !== livingFilter) return false;
-        return true;
-    });
+    const filtered = useMemo(() => people
+        .filter((p) => {
+            if (search && !p.displayName.toLowerCase().includes(search.toLowerCase())) return false;
+            if (genderFilter !== null && p.gender !== genderFilter) return false;
+            if (livingFilter !== null && p.isLiving !== livingFilter) return false;
+            return true;
+        })
+        .sort((a, b) => {
+            const aTreeIndex = treeOrder[a.handle];
+            const bTreeIndex = treeOrder[b.handle];
+
+            if (aTreeIndex !== undefined && bTreeIndex !== undefined) {
+                return aTreeIndex - bTreeIndex;
+            }
+
+            if (a.generation !== b.generation) {
+                return a.generation - b.generation;
+            }
+
+            const aBirthYear = a.birthYear ?? Number.MAX_SAFE_INTEGER;
+            const bBirthYear = b.birthYear ?? Number.MAX_SAFE_INTEGER;
+            if (aBirthYear !== bBirthYear) {
+                return aBirthYear - bBirthYear;
+            }
+
+            return a.displayName.localeCompare(b.displayName, 'vi');
+        }), [genderFilter, livingFilter, people, search, treeOrder]);
 
     return (
         <div className="space-y-6">
@@ -121,6 +185,7 @@ export default function PeopleListPage() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Họ tên</TableHead>
+                                    <TableHead>Đời</TableHead>
                                     <TableHead>Giới tính</TableHead>
                                     <TableHead>Năm sinh</TableHead>
                                     <TableHead>Năm mất</TableHead>
@@ -139,6 +204,9 @@ export default function PeopleListPage() {
                                             {p.isPrivacyFiltered && <Lock className="ml-1 inline h-3.5 w-3.5 text-amber-500" />}
                                         </TableCell>
                                         <TableCell>
+                                            <Badge variant="secondary">Đời {p.generation}</Badge>
+                                        </TableCell>
+                                        <TableCell>
                                             <Badge variant="outline">
                                                 {p.gender === 1 ? 'Nam' : p.gender === 2 ? 'Nữ' : '?'}
                                             </Badge>
@@ -154,7 +222,7 @@ export default function PeopleListPage() {
                                 ))}
                                 {filtered.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                                        <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                                             {search ? 'Không tìm thấy kết quả' : 'Chưa có dữ liệu gia phả'}
                                         </TableCell>
                                     </TableRow>
